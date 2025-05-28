@@ -1,0 +1,3 @@
+/mnt/c/UdeSA/Paradigmas/TP2/ej1/build/CMakeFiles/run.dir
+/mnt/c/UdeSA/Paradigmas/TP2/ej1/build/CMakeFiles/edit_cache.dir
+/mnt/c/UdeSA/Paradigmas/TP2/ej1/build/CMakeFiles/rebuild_cache.dir

@@ -16,6 +16,10 @@ tengo que agregar que chequee que la pokedex tenga cosas cuando le cargo pokemon
 tengo que checkear los nombres de los archivos y eso para evitar repticiones etc
 
 
+### Consideracion a preguntar del 3
+
+Yo hago que el sleep lo haga fuera del lock del recurso compartido, asi no hago que todo el resto de actores tengan que esperar a que termine el sleep para poder hacer su task.
+Nose si esto esta bien o no, va a las chapas asi esta buenisimo
 
 ---
 
@@ -23,3 +27,4 @@ Link que capaz pongo despues en el informe para que mariano no me venga a decir 
 
 https://www.geeksforgeeks.org/multithreading-in-cpp/
 https://youtu.be/hXKtYRleQd8?si=sePO8DyLzCXCmVuZ
+https://www.tek-tips.com/threads/mutex-arrays.1431058/ (wtf puedo tener hasta una matriz de mutexes)

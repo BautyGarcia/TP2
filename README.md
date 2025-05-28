@@ -14,3 +14,12 @@ es normal que al deserializar se de vuelta el orden
 
 tengo que agregar que chequee que la pokedex tenga cosas cuando le cargo pokemones del .bin
 tengo que checkear los nombres de los archivos y eso para evitar repticiones etc
+
+
+
+---
+
+Link que capaz pongo despues en el informe para que mariano no me venga a decir que lo hice con gpt:
+
+https://www.geeksforgeeks.org/multithreading-in-cpp/
+https://youtu.be/hXKtYRleQd8?si=sePO8DyLzCXCmVuZ

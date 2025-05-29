@@ -25,17 +25,18 @@ using namespace std;
 
 class Pokedex {
     private:
+        string saveName;
         unordered_map<Pokemon, PokemonInfo, PokeHash> pokes;
 
     public:
-        Pokedex() = default;
+        Pokedex(string name);
 
         void addPokemon(const Pokemon& pokemon, const PokemonInfo& info);
         void removePokemon(const string& name);
-        void displayPokemon() const;
+        void show() const;
         void show(const Pokemon poke) const;
 
-        void saveToFile(const string& filename);
+        void saveToFile();
         void loadFromFile(const string& filename);
 };
 

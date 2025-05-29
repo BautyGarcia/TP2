@@ -1,20 +1,12 @@
 # TP2
 
-hola :) 
+hola :)
 
-es mejor vector o puedo usar multimap
-com carajo se ordenan los ataques y eso
-puedo hacer pokedex static con los archivos (funciona igual pero queda mas fachero)
+hay que cambiar el coso este aclarando que se necesita lo que pida el cmake y el paso a paso
 
-"Estos pokemones deben ser reconocidos por el Pokedex simplemente utilizando
-una instancia de la clase Pokemon. La idea es reconocer su tipo y mostrar por
-pantalla su información." a que se refiere con esto
-
-es normal que al deserializar se de vuelta el orden
-
-tengo que agregar que chequee que la pokedex tenga cosas cuando le cargo pokemones del .bin
-tengo que checkear los nombres de los archivos y eso para evitar repticiones etc
-
+Para preguntar:
+- el cmake lo dejo creado o vacio build
+- que carajo pongo aca que se necesite (version de cmake minima 🤌)
 
 ### Consideracion a preguntar del 3
 

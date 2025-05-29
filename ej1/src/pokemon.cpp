@@ -1,11 +1,11 @@
 #include "../include/pokemon.hpp"
 
-Pokemon::Pokemon(string name):
-    name(name), xp(0)
+Pokemon::Pokemon(string n):
+    name(n), xp(0)
 {}
 
-Pokemon::Pokemon(string name, size_t xp):
-    name(name), xp(xp)
+Pokemon::Pokemon(string n, size_t x):
+    name(n), xp(x)
 {}
 
 Pokemon::Pokemon(const Pokemon& other):
@@ -37,7 +37,7 @@ void Pokemon::serialize(ofstream& file) const {
     file.write(reinterpret_cast<const char*>(&xp), sizeof(xp));
     size_t nameLength = name.size();
     file.write(reinterpret_cast<const char*>(&nameLength), sizeof(nameLength));
-    file.write(name.c_str(), nameLength);
+    file.write(name.c_str(), static_cast<streamsize>(nameLength));
 }
 
 void Pokemon::deserialize(ifstream& file) {
@@ -46,7 +46,7 @@ void Pokemon::deserialize(ifstream& file) {
     size_t nameLength;
     file.read(reinterpret_cast<char*>(&nameLength), sizeof(nameLength));
     name.resize(nameLength);
-    file.read(&name[0], nameLength);
+    file.read(&name[0], static_cast<streamsize>(nameLength));
 }
 
 ostream& operator<<(ostream& os, const Pokemon& pokemon) {

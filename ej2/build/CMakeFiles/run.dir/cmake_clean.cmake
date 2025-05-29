@@ -1,13 +1,8 @@
 file(REMOVE_RECURSE
-  "CMakeFiles/run.dir/example/main.cpp.o"
-  "CMakeFiles/run.dir/example/main.cpp.o.d"
-  "CMakeFiles/run.dir/src/dronecamp.cpp.o"
-  "CMakeFiles/run.dir/src/dronecamp.cpp.o.d"
-  "run"
-  "run.pdb"
+  "CMakeFiles/run"
 )
 
 # Per-language clean rules from dependency scanning.
-foreach(lang CXX)
+foreach(lang )
   include(CMakeFiles/run.dir/cmake_clean_${lang}.cmake OPTIONAL)
 endforeach()

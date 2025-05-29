@@ -1,3 +1,15 @@
 cmake_minimum_required(VERSION 3.10)
-project(ej3) # Nombre del proyecto
-add_executable(run main.cpp)
+project(ej3)
+add_executable(main main.cpp)
+
+#cambio el directorio de salida del ejecutable para que se cree en bin
+set_target_properties(main PROPERTIES RUNTIME_OUTPUT_DIRECTORY ${CMAKE_BINARY_DIR}/bin)
+
+#flags de warnings
+target_compile_options(main PRIVATE -Wall -Wextra -Wpedantic)
+
+#esto es para que se corra solo al hacer make run
+add_custom_target(run
+    COMMAND main
+    DEPENDS main
+    WORKING_DIRECTORY ${CMAKE_RUNTIME_OUTPUT_DIRECTORY})

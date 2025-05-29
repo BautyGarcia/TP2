@@ -1,10 +1,8 @@
 #include "../include/pokedex.hpp"
 
 int main(){
-    cout << "Creating Pokedex..." << endl;
-    Pokedex pokedex;
+    Pokedex pokedex("PokeTest1");
 
-    cout << "Creating Pokemons..." << endl;
     Pokemon squirtle("Squirtle", 100);
     Pokemon bulbasaur("Bulbasaur", 270);
     Pokemon charmander("Charmander", 633);
@@ -21,27 +19,33 @@ int main(){
     PokemonInfo bulbasaurData("Planta", "Tiene una semilla en su lomo que crece con el tiempo", bulbasaurAttacks, bulbasaurXP);
     PokemonInfo charmanderData("Fuego", "Una lagartija con una llama en su cola", charmanderAttacks, charmanderXP);
 
-    cout << "Adding Pokemons to Pokedex..." << endl;
     pokedex.addPokemon(squirtle, squirtleData);
     pokedex.addPokemon(bulbasaur, bulbasaurData);
     pokedex.addPokemon(charmander, charmanderData);
 
-    cout << endl << "Pokedex after adding Pokemons:" << endl;
-    pokedex.displayPokemon();
+    cout << " ======== Full pokedex: ======== " << endl;
+    pokedex.show();
 
-    cout << endl << "Showing Squirtle data:" << endl;
+    cout << endl << " ======== Showing individually ======== " << endl;
+    cout << "Showing Squirtle data:" << endl;
     pokedex.show(squirtle);
+
+    cout << endl << "Showing Bulbasaur data with another level (different Bulbasaur):" << endl;
+    pokedex.show(Pokemon ("Bulbasaur", 500));
 
     cout << endl << "Showing Pikachu data:" << endl;
     pokedex.show(Pokemon("Pikachu"));
 
-    cout << endl << "Saving data..." << endl;
-    pokedex.saveToFile("pokedex_data");
+    cout << endl << " ======== Saving and loading data ======== " << endl;
+    pokedex.saveToFile();
+    cout << "Data saved to file." << endl;
 
-    cout << "Creating a new Pokedex instance and loading data from file..." << endl;
-    Pokedex newPokedex;
-    newPokedex.loadFromFile("pokedex_data");
+    cout << "Creating a new Pokedex and loading data from file..." << endl;
+    Pokedex newPokedex("PokeTest2");
+    newPokedex.loadFromFile("PokeTest1");
+    cout << "Data loaded from file." << endl;
+
     cout << endl << "New Pokedex after loading from file:" << endl;
-    newPokedex.displayPokemon();
+    newPokedex.show();
     return 0;
 }

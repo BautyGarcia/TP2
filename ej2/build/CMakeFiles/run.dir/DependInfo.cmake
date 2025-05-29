@@ -8,8 +8,6 @@ set(CMAKE_DEPENDS_LANGUAGES
 
 # The set of dependency files which are needed:
 set(CMAKE_DEPENDS_DEPENDENCY_FILES
-  "/mnt/c/UdeSA/Paradigmas/TP2/ej2/example/main.cpp" "CMakeFiles/run.dir/example/main.cpp.o" "gcc" "CMakeFiles/run.dir/example/main.cpp.o.d"
-  "/mnt/c/UdeSA/Paradigmas/TP2/ej2/src/dronecamp.cpp" "CMakeFiles/run.dir/src/dronecamp.cpp.o" "gcc" "CMakeFiles/run.dir/src/dronecamp.cpp.o.d"
   )
 
 # Targets to which this target links which contain Fortran sources.

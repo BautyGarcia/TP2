@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named main
+
+# Build rule for target.
+main: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main
+.PHONY : main
+
+# fast build rule for target.
+main/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
+.PHONY : main/fast
+
+#=============================================================================
 # Target rules for targets named run
 
 # Build rule for target.
@@ -134,7 +147,7 @@ example/main.o: example/main.cpp.o
 
 # target to build an object file
 example/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/example/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/example/main.cpp.o
 .PHONY : example/main.cpp.o
 
 example/main.i: example/main.cpp.i
@@ -142,7 +155,7 @@ example/main.i: example/main.cpp.i
 
 # target to preprocess a source file
 example/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/example/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/example/main.cpp.i
 .PHONY : example/main.cpp.i
 
 example/main.s: example/main.cpp.s
@@ -150,7 +163,7 @@ example/main.s: example/main.cpp.s
 
 # target to generate assembly for a file
 example/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/example/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/example/main.cpp.s
 .PHONY : example/main.cpp.s
 
 src/dronecamp.o: src/dronecamp.cpp.o
@@ -158,7 +171,7 @@ src/dronecamp.o: src/dronecamp.cpp.o
 
 # target to build an object file
 src/dronecamp.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/dronecamp.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/dronecamp.cpp.o
 .PHONY : src/dronecamp.cpp.o
 
 src/dronecamp.i: src/dronecamp.cpp.i
@@ -166,7 +179,7 @@ src/dronecamp.i: src/dronecamp.cpp.i
 
 # target to preprocess a source file
 src/dronecamp.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/dronecamp.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/dronecamp.cpp.i
 .PHONY : src/dronecamp.cpp.i
 
 src/dronecamp.s: src/dronecamp.cpp.s
@@ -174,7 +187,7 @@ src/dronecamp.s: src/dronecamp.cpp.s
 
 # target to generate assembly for a file
 src/dronecamp.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/dronecamp.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/dronecamp.cpp.s
 .PHONY : src/dronecamp.cpp.s
 
 # Help Target
@@ -186,6 +199,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... run"
+	@echo "... main"
 	@echo "... example/main.o"
 	@echo "... example/main.i"
 	@echo "... example/main.s"

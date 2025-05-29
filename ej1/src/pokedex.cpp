@@ -1,5 +1,9 @@
 #include "../include/pokedex.hpp"
 
+Pokedex::Pokedex(string name):
+    saveName(name), pokes()
+{}
+
 void Pokedex::addPokemon(const Pokemon& pokemon, const PokemonInfo& info) {
     pokes[pokemon] = info;
 }
@@ -14,15 +18,26 @@ void Pokedex::removePokemon(const string& name) {
     }
 }
 
-void Pokedex::displayPokemon() const {
+void Pokedex::show() const {
     //itero por todos los pokemones de la pokedex
     for (const auto& entry : pokes) {
 
         //muestro la info de cada uno
         cout << entry.first << " - Type: " << entry.second.getType() << ", Description: " << entry.second.getDescription() << endl;
         cout << "Attacks: ";
-        for (auto i = 0; i < entry.second.getAttacks().size(); i++){
-            if (entry.first.getXP() >= entry.second.getXPRemaining()[i]) cout << entry.second.getAttacks()[i].first << " (Power: " << entry.second.getAttacks()[i].second << ") "; 
+        for (size_t i = 0; i < entry.second.getAttacks().size(); i++){
+            cout << entry.second.getAttacks()[static_cast<size_t>(i)].first << " (Power: " << entry.second.getAttacks()[i].second << ")";
+            if (i < entry.second.getAttacks().size() - 1) cout << ", ";
+        }
+        size_t i;
+        for (i = 0; i < entry.second.getXPRemaining().size(); i++){
+            if (entry.second.getXPRemaining()[i] > entry.first.getXP()){
+                cout << endl << "XP for next evolution: " << entry.second.getXPRemaining()[i] - entry.first.getXP() << endl;
+                break;
+            }
+        }
+        if (i == entry.second.getXPRemaining().size()) {
+            cout << "Max Level" << endl;
         }
         cout << endl;
     }
@@ -36,19 +51,27 @@ void Pokedex::show(const Pokemon poke) const {
         if (entry.first == poke){
             cout << entry.first << " - Type: " << entry.second.getType() << ", Description: " << entry.second.getDescription() << endl;
             cout << "Attacks: ";
-            for (auto i = 0; i < entry.second.getAttacks().size(); i++){
-                if (entry.first.getXP() >= entry.second.getXPRemaining()[i]) cout << entry.second.getAttacks()[i].first << " (Power: " << entry.second.getAttacks()[i].second << ") "; 
+            for (size_t i = 0; i < entry.second.getAttacks().size(); i++){
+                cout << entry.second.getAttacks()[i].first << " (Power: " << entry.second.getAttacks()[i].second << ")";
+                if (i < entry.second.getAttacks().size() - 1) cout << ", ";
             }
-            cout << endl;
+            for (size_t i = 0; i < entry.second.getXPRemaining().size(); i++){
+                if (entry.second.getXPRemaining()[i] > entry.first.getXP()){
+                    cout << endl << "XP for next evolution: " << entry.second.getXPRemaining()[i] - entry.first.getXP() << endl;
+                    return;
+                }
+            }
+            cout << "Max Level" << endl;
             return;
         }
     }
     cout << "Unknown Pokemon!" << endl;
 }
 
-void Pokedex::saveToFile(const string& filename) {
+void Pokedex::saveToFile() {
     //abro el archivo en modo binario
-    ofstream file("example/" + filename + ".bin", ios::binary);
+    //se guarda en ej1/build/bin/
+    ofstream file("bin/" + saveName + ".bin", ios::binary);
     if (!file.is_open()) {
         cout << "Error opening file for writing." << endl;
         return;
@@ -69,9 +92,9 @@ void Pokedex::saveToFile(const string& filename) {
 
 void Pokedex::loadFromFile(const string& filename) {
     //busco el archivo para cargar
-    ifstream file("example/" + filename + ".bin", ios::binary);
+    ifstream file("bin/" + filename + ".bin", ios::binary);
     if (!file.is_open()) {
-        cerr << "Error opening file for reading." << endl;
+        cout << "Pokedex record doesnt exists." << endl;
         return;
     }
 

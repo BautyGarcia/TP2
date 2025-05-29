@@ -117,6 +117,19 @@ depend:
 .PHONY : depend
 
 #=============================================================================
+# Target rules for targets named main
+
+# Build rule for target.
+main: cmake_check_build_system
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 main
+.PHONY : main
+
+# fast build rule for target.
+main/fast:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/build
+.PHONY : main/fast
+
+#=============================================================================
 # Target rules for targets named run
 
 # Build rule for target.
@@ -134,7 +147,7 @@ example/main.o: example/main.cpp.o
 
 # target to build an object file
 example/main.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/example/main.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/example/main.cpp.o
 .PHONY : example/main.cpp.o
 
 example/main.i: example/main.cpp.i
@@ -142,7 +155,7 @@ example/main.i: example/main.cpp.i
 
 # target to preprocess a source file
 example/main.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/example/main.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/example/main.cpp.i
 .PHONY : example/main.cpp.i
 
 example/main.s: example/main.cpp.s
@@ -150,7 +163,7 @@ example/main.s: example/main.cpp.s
 
 # target to generate assembly for a file
 example/main.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/example/main.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/example/main.cpp.s
 .PHONY : example/main.cpp.s
 
 src/info.o: src/info.cpp.o
@@ -158,7 +171,7 @@ src/info.o: src/info.cpp.o
 
 # target to build an object file
 src/info.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/info.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/info.cpp.o
 .PHONY : src/info.cpp.o
 
 src/info.i: src/info.cpp.i
@@ -166,7 +179,7 @@ src/info.i: src/info.cpp.i
 
 # target to preprocess a source file
 src/info.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/info.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/info.cpp.i
 .PHONY : src/info.cpp.i
 
 src/info.s: src/info.cpp.s
@@ -174,7 +187,7 @@ src/info.s: src/info.cpp.s
 
 # target to generate assembly for a file
 src/info.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/info.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/info.cpp.s
 .PHONY : src/info.cpp.s
 
 src/pokedex.o: src/pokedex.cpp.o
@@ -182,7 +195,7 @@ src/pokedex.o: src/pokedex.cpp.o
 
 # target to build an object file
 src/pokedex.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/pokedex.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/pokedex.cpp.o
 .PHONY : src/pokedex.cpp.o
 
 src/pokedex.i: src/pokedex.cpp.i
@@ -190,7 +203,7 @@ src/pokedex.i: src/pokedex.cpp.i
 
 # target to preprocess a source file
 src/pokedex.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/pokedex.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/pokedex.cpp.i
 .PHONY : src/pokedex.cpp.i
 
 src/pokedex.s: src/pokedex.cpp.s
@@ -198,7 +211,7 @@ src/pokedex.s: src/pokedex.cpp.s
 
 # target to generate assembly for a file
 src/pokedex.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/pokedex.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/pokedex.cpp.s
 .PHONY : src/pokedex.cpp.s
 
 src/pokemon.o: src/pokemon.cpp.o
@@ -206,7 +219,7 @@ src/pokemon.o: src/pokemon.cpp.o
 
 # target to build an object file
 src/pokemon.cpp.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/pokemon.cpp.o
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/pokemon.cpp.o
 .PHONY : src/pokemon.cpp.o
 
 src/pokemon.i: src/pokemon.cpp.i
@@ -214,7 +227,7 @@ src/pokemon.i: src/pokemon.cpp.i
 
 # target to preprocess a source file
 src/pokemon.cpp.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/pokemon.cpp.i
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/pokemon.cpp.i
 .PHONY : src/pokemon.cpp.i
 
 src/pokemon.s: src/pokemon.cpp.s
@@ -222,7 +235,7 @@ src/pokemon.s: src/pokemon.cpp.s
 
 # target to generate assembly for a file
 src/pokemon.cpp.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/run.dir/build.make CMakeFiles/run.dir/src/pokemon.cpp.s
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/main.dir/build.make CMakeFiles/main.dir/src/pokemon.cpp.s
 .PHONY : src/pokemon.cpp.s
 
 # Help Target
@@ -234,6 +247,7 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... run"
+	@echo "... main"
 	@echo "... example/main.o"
 	@echo "... example/main.i"
 	@echo "... example/main.s"

@@ -27,7 +27,7 @@ class PokemonInfo {
         vector<size_t> xpRemaining;
 
     public:
-        PokemonInfo() = default;
+        PokemonInfo();
         PokemonInfo(string type, string description);
         PokemonInfo(string type, string description, vector<pair<string, size_t>> attacks, vector<size_t> xpRemaining);
         

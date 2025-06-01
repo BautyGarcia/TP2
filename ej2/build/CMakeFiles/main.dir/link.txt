@@ -1,1 +1,0 @@
-/usr/bin/c++ CMakeFiles/main.dir/example/main.cpp.o CMakeFiles/main.dir/src/dronecamp.cpp.o -o bin/main 

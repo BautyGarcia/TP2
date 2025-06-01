@@ -82,6 +82,7 @@ void PokemonInfo::deserialize(ifstream& file) {
 
     //extraigo el largo del tipo de pokemon, modifico el tamaño del atributo y guardo el str
     file.read(reinterpret_cast<char*>(&len), sizeof(len));
+    type.resize(static_cast<long unsigned int>(len));
     file.read(&type[0], static_cast<streamsize>(len));
 
     //idem para la descripcion

@@ -1,9 +1,19 @@
 #include "../include/pokedex.hpp"
 
+void clearScreen();
+void clearScreen(){
+    #ifdef _WIN32
+        std::system("cls");
+    #else
+        std::system("clear");
+    #endif
+}
+
 int main(){
+    clearScreen();
     Pokedex pokedex("PokeTest1");
 
-    Pokemon squirtle("Squirtle", 100);
+    Pokemon squirtle("Squirtle", 10000);
     Pokemon bulbasaur("Bulbasaur", 270);
     Pokemon charmander("Charmander", 633);
 
@@ -23,10 +33,14 @@ int main(){
     pokedex.addPokemon(bulbasaur, bulbasaurData);
     pokedex.addPokemon(charmander, charmanderData);
 
-    cout << " ======== Full pokedex: ======== " << endl;
+    cout << "======== Full pokedex: ========" << endl;
     pokedex.show();
 
-    cout << endl << " ======== Showing individually ======== " << endl;
+    cout << "Press enter to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    clearScreen();
+
+    cout << endl << "======== Showing individually ========" << endl;
     cout << "Showing Squirtle data:" << endl;
     pokedex.show(squirtle);
 
@@ -36,7 +50,11 @@ int main(){
     cout << endl << "Showing Pikachu data:" << endl;
     pokedex.show(Pokemon("Pikachu"));
 
-    cout << endl << " ======== Saving and loading data ======== " << endl;
+    cout << "Press enter to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    clearScreen();
+
+    cout << endl << "======== Saving and loading data ========" << endl;
     pokedex.saveToFile();
     cout << "Data saved to file." << endl;
 
@@ -46,6 +64,18 @@ int main(){
     cout << "Data loaded from file." << endl;
 
     cout << endl << "New Pokedex after loading from file:" << endl;
+    newPokedex.show();
+
+    cout << "Press enter to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    clearScreen();
+
+    cout << endl << "======== Adding more Pokemons to the new Pokedex ========" << endl;
+    newPokedex.addPokemon(Pokemon("Pikachu", 100), PokemonInfo("Electrico", "Un pokemon electrico muy popular", {{"Impactrueno", 5}, {"Rayo", 7}, {"Trueno", 6}}, {0, 300, 800}));
+    newPokedex.addPokemon(Pokemon("Squirtle", 200), squirtleData);
+    newPokedex.addPokemon(Pokemon("Pikachu", 300), PokemonInfo("Electrico", "Un pokemon electrico muy popular", {{"Impactrueno", 5}, {"Rayo", 7}, {"Trueno", 6}}, {0, 300, 800}));
+    newPokedex.addPokemon(Pokemon("Charmander", 400), charmanderData);
+    cout << "New Pokedex after adding more Pokemons:" << endl;
     newPokedex.show();
     return 0;
 }

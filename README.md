@@ -1,5 +1,22 @@
 # TP2
 
+Para el ej 1:
+Use un archivo de una libreria de internet (esta en los includes es el unico .h)
+
+https://github.com/nothings/stb
+
+asi que despues vemos si hay que decirlo o nombrarlo (le damos creditos al muchacho)
+
+correlo con la terminal en pantalla completa o lo mas grande que puedas, oculta el cursor y todo lo que te achique la terminal
+lo importante es el ancho, si no te sale bien a la primera seria medio troll (me pondria triste)
+sino anda a pokedex.cpp y fijate el texto que hay arriba de MAX_TERM_WIDTH (esta arriba del todo)
+
+para correrlo con el cmake parate en la carpeta build
+tira cmake ..
+y ahi nomas clear && make
+cuando se compile tira bin/main 
+then enjoy
+
 hola :)
 
 hay que cambiar el coso este aclarando que se necesita lo que pida el cmake y el paso a paso

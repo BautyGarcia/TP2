@@ -32,7 +32,7 @@ size_t Pokemon::getXP() const {
     return xp;
 }
 
-size_t Pokemon::getPokedexID() const {
+int Pokemon::getPokedexID() const {
     return pokedexID;
 }
 

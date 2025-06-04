@@ -1,20 +1,36 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../include/pokedex.hpp"
 
-const int GREEN_R = 0, GREEN_G = 255, GREEN_B = 0;
-
 //esto es el ancho maximo para que se printee la pokedex, el minimo es 47 pero no tiene en cuenta este valor.
 //si se pone un numero menor a 47, se acomoda la pokedex a 47 de ancho, sin embargo no se va a ver bien.
 //si se ve cortada la imagen en la pokedex, proba bajando este valor para acomodar al tamaño de tu terminal.
 //IMPORTANTE: numeros ideales para que este todo alineado: 51, 52, 57, 58, 63, 64, 69, 70, 75, 76, 81, 82, etc.
 const int MAX_TERM_WIDTH = 75;
 
+//esto define cuantos pokemones como maximo pueden haber en una pagina (se recomienda un multiplo de 3)
+//se puede poner cualquier valor pero si es muy grande puede llegar a cortarse por no entrar en la terminal
+const int POKES_PER_PAGE = 15;
+
 Pokedex::Pokedex(string name):
     saveName(name), pokes()
 {}
 
+//cada pagina tiene un maximo de pokemones que se pueden mostrar, se define arriba
+size_t Pokedex::getTotalPages() const {
+    return pokes.size() / POKES_PER_PAGE + (pokes.size() % POKES_PER_PAGE != 0 ? 1 : 0);
+}
+
+size_t Pokedex::getCurrentPage() const {
+    return currentPage;
+}
+
 //PokemonInfo se crea automaticamente segun el pokemon que se haya pasado
 void Pokedex::addPokemon(const Pokemon& pokemon) {
+    if (pokemon.getPokedexID() == -1) {
+        cout << "Not even the bests pokemon masters of all time know this Pokemon." << endl;
+        this_thread::sleep_for(chrono::seconds(1));
+        return;
+    }
     if (pokes.find(pokemon) == pokes.end()) {
         pokes[pokemon] = PokemonInfo(pokemon.getPokedexID());
         return;
@@ -69,9 +85,28 @@ void Pokedex::show(const Pokemon poke) const {
 }
 
 void Pokedex::show() const {
+    cout << string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 - saveName.length() % 2, '=') 
+        << " " + saveName + " " 
+        << string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 , '=') << endl;
+    
+    if (pokes.empty()) {
+        cout << "This pokedex is empty :(" << endl;
+        return;
+    }
+
+    cout << " " << string(MAX_TERM_WIDTH * 2 + 4, '_') << " " << endl;
+
+    
+
     vector<Pokemon> threePokemons;
+
+    //veo en que pagina me habia quedado
+    int firstPoke = (currentPage - 1) * POKES_PER_PAGE;
+    int currentPoke = 0;
+
     for (const auto& entry : pokes) {
-        threePokemons.push_back(entry.first);
+        bool isInPage = firstPoke <= currentPoke && currentPoke < firstPoke + POKES_PER_PAGE;
+        if (isInPage) threePokemons.push_back(entry.first);
 
         //solo entran 3 pokemones por fila (si se amontonan creo que pueden entrar 4 pero al pedo)
         if (threePokemons.size() == 3) {
@@ -79,15 +114,20 @@ void Pokedex::show() const {
             threePokemons.clear();
             cout << "|" << string(MAX_TERM_WIDTH * 2 / 3, '_') << "||" << string(MAX_TERM_WIDTH * 2 / 3, '_') << "||" << string(MAX_TERM_WIDTH * 2 / 3, '_') << "|" << endl;
         }
+        currentPoke++;
     }
 
     //por si quedan pokemones sin mostrar
     if (!threePokemons.empty()) {
         //completo con pokemones vacios
+        int numOfEmptys = 0;
         while (threePokemons.size() < 3) {
             threePokemons.push_back(Pokemon("Empty"));
+            numOfEmptys++;
         }
         printThreePokes(threePokemons);
+        if (numOfEmptys == 1) cout << "|" << string(MAX_TERM_WIDTH + 1, '_') << "||" << string(MAX_TERM_WIDTH + 1, '_') << "|" << endl;
+        if (numOfEmptys == 2) cout << "|" << string(MAX_TERM_WIDTH * 2 + 4, '_') << "|" << endl;
     }
 }
 
@@ -176,7 +216,7 @@ string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrin
             //printeo una linea del pokemon correspondiente
             for (int x = 0; x < widthOfPrints; x++) {
 
-                //mas calculos de pixeles que ayudo el chat
+                //calculo el pixel que me interesa con la escala que sacamos antes
                 int srcX = static_cast<int>(x * scaleXs[i]);
                 int srcY = static_cast<int>(y * scaleYs[i]);
                 int channel = channels[i];
@@ -186,17 +226,45 @@ string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrin
                 int b = images[i][idx + 2];
 
                 bool isTransparent = false;
+                bool isVeryDark = (r + g + b) < 60;
                 if (channel == 4) { // Imagen con canal alpha
                     int a = images[i][idx + 3];
                     isTransparent = (a == 0);
                 }
-                //a las fotos les agregamos un fondo verde para sacarselo porque NO EXISTE UN PNG BUENO DE UN POKEMON
-                //aparte es mucho mas facil que quede bien asi que con otro fondo
-                if ((r == GREEN_R && g == GREEN_G && b == GREEN_B) || isTransparent) {
-                    output += "  ";
-                } else {
+
+                //como son todas las fotos PNGs el fondo vacio lo remplazo por dos espacios
+                if (isTransparent) output += "  ";
+                else if (isVeryDark) {
+
+                    //si el pixel sale muy oscuro promedio con los de los costados para suavizar
+                    int rSum = 0, gSum = 0, bSum = 0, n = 0;
+                
+                    //pixel izquierdo (me fijo que no me pase del borde)
+                    if (x > 0) {
+                        int lidx = (srcY * widths[i] + static_cast<int>((x-1)*scaleXs[i])) * channel;
+                        rSum += images[i][lidx];
+                        gSum += images[i][lidx + 1];
+                        bSum += images[i][lidx + 2];
+                        n++;
+                    }
+
+                    //pixel derecho (me fijo que no me pase del borde)
+                    if (x < widthOfPrints-1) {
+                        int ridx = (srcY * widths[i] + static_cast<int>((x+1)*scaleXs[i])) * channel;
+                        rSum += images[i][ridx];
+                        gSum += images[i][ridx + 1];
+                        bSum += images[i][ridx + 2];
+                        n++;
+                    }
+
+                    if (n > 0) {
+                        r = rSum / n;
+                        g = gSum / n;
+                        b = bSum / n;
+                    }
                     output += getPixelColor(r, g, b);
-                }
+                } 
+                else output += getPixelColor(r, g, b);
             }
 
             //agrego el segundo margen

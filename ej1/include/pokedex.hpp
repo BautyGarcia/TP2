@@ -25,6 +25,7 @@ using namespace std;
 
 class Pokedex {
     private:
+        size_t currentPage = 1;
         string saveName;
         unordered_map<Pokemon, PokemonInfo, PokeHash> pokes;
 
@@ -40,8 +41,14 @@ class Pokedex {
     public:
         Pokedex(string name);
 
+        string getSaveName() const { return saveName; }
+
+        size_t getTotalPages() const;
+        size_t getCurrentPage() const;
+        void nextPage() { if (currentPage < getTotalPages()) currentPage++; }
+        void previousPage() { if (currentPage > 1) currentPage--; }
+
         void addPokemon(const Pokemon& pokemon);
-        void removePokemon(const string& name);
         void show() const;
         void show(const Pokemon poke) const;
 

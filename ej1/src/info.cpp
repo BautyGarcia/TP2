@@ -1,18 +1,6 @@
 #include "../include/info.hpp"
 
-PokemonInfo::PokemonInfo():
-    type(""), description(""), attacks(), xpRemaining()
-{}
-
-PokemonInfo::PokemonInfo(string t, string d):
-    type(t), description(d), attacks(), xpRemaining()
-{}
-
-PokemonInfo::PokemonInfo(string t, string d, vector<pair<string, size_t>> a, vector<size_t> x):
-    type(t), description(d), attacks(a), xpRemaining(x) 
-{}
-
-PokemonInfo::PokemonInfo(size_t pokedexID):
+PokemonInfo::PokemonInfo(int pokedexID):
     type(""), description(""), attacks(), xpRemaining()
 {readData(pokedexID);}
 
@@ -54,7 +42,7 @@ void PokemonInfo::addAttack(string attackName, size_t damage, size_t xpNeeded){
 }
 
 //============ READ DATA (PRIVADO) ============//
-void PokemonInfo::readData(size_t pokedexId) {
+void PokemonInfo::readData(int pokedexId) {
     ifstream pokeDataFile("assets/data/pokemons.csv");
     ifstream movesDataFile("assets/data/moves.csv");
     string line;
@@ -67,7 +55,7 @@ void PokemonInfo::readData(size_t pokedexId) {
         
         //busco el numero de pokedex
         getline(ss, value, ',');
-        size_t currentId = stoi(value);
+        int currentId = stoi(value);
 
         if (currentId == pokedexId) {
 

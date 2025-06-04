@@ -27,13 +27,13 @@ class PokemonInfo {
         vector<pair<string, size_t>> attacks;
         vector<size_t> xpRemaining;
 
-        void readData(size_t pokedexID);
+        //pongo el constructor privado ya que este depende uncamente del pokemon al que se le asigne, no me interesa tener un 
+        //PokemonInfo sin un Pokemon por lo que hago friend a Pokedex para que sea la unica forma de crear un PokemonInfo
+        PokemonInfo(int pokedexID);
+        void readData(int pokedexID);
     public:
-        PokemonInfo();
-        PokemonInfo(string type, string description);
-        PokemonInfo(string type, string description, vector<pair<string, size_t>> attacks, vector<size_t> xpRemaining);
-        PokemonInfo(size_t pokedexID);
-        
+        PokemonInfo() = default;
+
         void setType(const string& newType);
         void setDescription(const string& newDescription);
         void setAttacks(const vector<pair<string, size_t>>& newAttacks);
@@ -45,6 +45,8 @@ class PokemonInfo {
         vector<size_t> getXPRemaining() const;
 
         void addAttack(string attackName, size_t damage, size_t power);
+
+        friend class Pokedex;
 };
 
 

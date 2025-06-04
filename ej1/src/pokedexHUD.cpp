@@ -1,4 +1,13 @@
 #include "../include/pokedexHUD.hpp"
+#include "../include/pokedex.hpp"
+
+void clearScreen(){
+    #ifdef _WIN32
+        std::system("cls");
+    #else
+        std::system("clear");
+    #endif
+}
 
 vector<unsigned char*> cargarImagenesPokemones(vector<Pokemon> pokemons, vector<int>& widths, vector<int>& heights, vector<int>& chans) {
     vector<unsigned char*> images;
@@ -65,12 +74,11 @@ string barCreator(float percentage) {
     return bar;
 }
 
-void showOptions(size_t currentPage, size_t totalPages) {
-    cout << "1. Select a Pokemon" << endl;
-    cout << "2. Add Pokemon" << endl;
-    cout << "3. Remove Pokemon" << endl;
+int showOptions(size_t currentPage, size_t totalPages) {
+    cout << "1. Add Pokemon" << endl;
+    cout << "2. Select a Pokemon" << endl;
 
-    int num = 4;
+    int num = 3;
     if (totalPages > 1 && currentPage < totalPages) {
         cout << num << ". Next Page" << endl;
         num++;
@@ -79,8 +87,9 @@ void showOptions(size_t currentPage, size_t totalPages) {
         cout << num << ". Previous Page" << endl;
         num++;
     }
-    cout << num << ". Select a new Pokedex" << endl;
-    cout << num << ". Exit" << endl;
+    cout << "0. Exit" << endl;
+    cout << "> ";
+    return num;
 }
 
 int emptysAndLeftTabs(vector<Pokemon> threePokemons, int MAX_TERM_WIDTH) {
@@ -95,4 +104,49 @@ int emptysAndLeftTabs(vector<Pokemon> threePokemons, int MAX_TERM_WIDTH) {
     }
 
     return tabs;
+}
+
+void handleAddPokemon(Pokedex& pokedex) {
+    string name;
+    cout << "Enter the name of the Pokemon to add: ";
+    cin >> name;
+    while (cin.good() && name.empty()) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Enter a valid name.";
+        
+        this_thread::sleep_for(chrono::seconds(1));
+        cin >> name;
+    }
+    
+    pokedex.addPokemon(Pokemon(name));
+}
+
+void handleShowPokemon(Pokedex& pokedex) {
+    string name;
+    cout << "Select a Pokemon from your Pokedex: ";
+    cin >> name;
+    while (cin.good() && name.empty()) {
+        cin.clear();
+        cin.ignore(numeric_limits<streamsize>::max(), '\n');
+        cout << "Enter a valid name.";
+        
+        this_thread::sleep_for(chrono::seconds(1));
+        cin >> name;
+    }
+
+    clearScreen();
+    pokedex.show(Pokemon(name));
+    cout << endl << "Press enter to continue...";
+    cin.ignore(numeric_limits<streamsize>::max(), '\n');
+    cin.get();
+}
+
+//devuelve true si hay que cambiar de pokedex y false si solo hay que cambiar de pagina
+void handlePageOrPokedexChange(Pokedex& pokedex, int option) {
+    if (option == 3) {
+        if (pokedex.getCurrentPage() < pokedex.getTotalPages()) pokedex.nextPage();
+        else if (pokedex.getCurrentPage() > 1) pokedex.previousPage();
+    }
+    else if (option == 4 && pokedex.getCurrentPage() > 1) pokedex.previousPage();
 }

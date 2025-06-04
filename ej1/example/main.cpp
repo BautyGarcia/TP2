@@ -1,14 +1,5 @@
 #include "../include/pokedex.hpp"
 
-void clearScreen();
-void clearScreen(){
-    #ifdef _WIN32
-        std::system("cls");
-    #else
-        std::system("clear");
-    #endif
-}
-
 void createFullPokedex(Pokedex& pokedex);
 void createFullPokedex(Pokedex& pokedex) {
     ifstream file("assets/data/pokemons.csv");
@@ -33,13 +24,37 @@ void createFullPokedex(Pokedex& pokedex) {
 }
 
 int main(){
-    Pokedex pokedex("pokedex");
-    pokedex.addPokemon(Pokemon("Charmander"));
-    pokedex.addPokemon(Pokemon("Pikachu"));
-    pokedex.addPokemon(Pokemon("Squirtle"));
-    pokedex.addPokemon(Pokemon("Eevee"));
-    pokedex.addPokemon(Pokemon("Jigglypuff"));
-    pokedex.show();
+    Pokedex pokedex("Full Pokedex Test");
+    createFullPokedex(pokedex);
+    
+    while (true){
+        clearScreen();
+        pokedex.show();
+        cout << endl << endl;
+        int numOptions = showOptions(pokedex.getCurrentPage(), pokedex.getTotalPages());
 
+        int option;
+        cin >> option;
+        while (!cin.good() || option < 0 || option > numOptions - 1) {
+            cout << "Invalid input. Select a valid option.";
+            cin.clear();
+            cin.ignore(numeric_limits<streamsize>::max(), '\n');
+            
+            this_thread::sleep_for(chrono::seconds(1));
+
+            clearScreen();
+            pokedex.show();
+            cout << endl << endl;
+            numOptions = showOptions(pokedex.getCurrentPage(), pokedex.getTotalPages());
+            cin >> option;
+        }
+
+        switch (option){
+            case 0: pokedex.saveToFile(); return 0;
+            case 1: handleAddPokemon(pokedex); break;
+            case 2: handleShowPokemon(pokedex); break;
+            default: handlePageOrPokedexChange(pokedex, option); break;
+        }
+    }
     return 0;
 }

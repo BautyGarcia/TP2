@@ -12,6 +12,10 @@ PokemonInfo::PokemonInfo(string t, string d, vector<pair<string, size_t>> a, vec
     type(t), description(d), attacks(a), xpRemaining(x) 
 {}
 
+PokemonInfo::PokemonInfo(size_t pokedexID):
+    type(""), description(""), attacks(), xpRemaining()
+{readData(pokedexID);}
+
 void PokemonInfo::setType(const string& newType) {
     type = newType;
 }
@@ -49,67 +53,84 @@ void PokemonInfo::addAttack(string attackName, size_t damage, size_t xpNeeded){
     xpRemaining.push_back(xpNeeded);
 }
 
-void PokemonInfo::serialize(ofstream& file) const {
-    //guardo el largo y el str del tipo de pokemon
-    streamsize typeLength = static_cast<streamsize>(type.size());
-    file.write(reinterpret_cast<const char*>(&typeLength), sizeof(typeLength));
-    file.write(type.c_str(), typeLength);
+//============ READ DATA (PRIVADO) ============//
+void PokemonInfo::readData(size_t pokedexId) {
+    ifstream pokeDataFile("assets/data/pokemons.csv");
+    ifstream movesDataFile("assets/data/moves.csv");
+    string line;
 
-    //guardo el largo y el str de la descripcion
-    streamsize descLength = static_cast<streamsize>(description.size());
-    file.write(reinterpret_cast<const char*>(&descLength), sizeof(descLength));
-    file.write(description.c_str(), descLength);
+    getline(pokeDataFile, line);
+    string type1, type2, movesList;
+    while (getline(pokeDataFile, line)) {
+        stringstream ss(line);
+        string value;
+        
+        //busco el numero de pokedex
+        getline(ss, value, ',');
+        size_t currentId = stoi(value);
 
-    //guardo la cantidad de ataques (siempre 3) y cada ataque con su nombre, largo del nombre y daño
-    streamsize attackCount = static_cast<streamsize>(attacks.size());
-    file.write(reinterpret_cast<const char*>(&attackCount), sizeof(attackCount));
-    for (const auto& attack : attacks) {
-        streamsize nameLen = static_cast<streamsize>(attack.first.size());
-        file.write(reinterpret_cast<const char*>(&nameLen), sizeof(nameLen));
-        file.write(attack.first.c_str(), nameLen);
-        file.write(reinterpret_cast<const char*>(&attack.second), sizeof(attack.second));
+        if (currentId == pokedexId) {
+
+            //skipeo la columna del nombre
+            getline(ss, value, ',');
+
+            //agarro los dos tipos posibles
+            getline(ss, type1, ',');
+            getline(ss, type2, ',');
+
+            //la xp necesaria para subir de nivel lo determinan las stats 
+            //(me sobraba info y queria que esto no sea generico ni aleatorio)
+            size_t sumStats = 0;
+            string currentStat;
+            for (int i = 0; i < 6; i++){
+                getline(ss, currentStat, ',');
+                sumStats += stoi(currentStat);
+            }
+            xpRemaining = {0, sumStats * 10, sumStats * 30};
+
+            //skipeo 4 lineas mas y agarro la lista de movimientos
+            for (int i = 0; i < 5; i++) getline(ss, movesList, ',');
+
+            //agarro la descripcion (la guardo de una)
+            getline(ss, description, ',');
+            break;
+        }
     }
 
-    //lo mismo con los valores de xp
-    streamsize xpCount = static_cast<streamsize>(xpRemaining.size());
-    file.write(reinterpret_cast<const char*>(&xpCount), sizeof(xpCount));
-    for (const auto& xp : xpRemaining)
-        file.write(reinterpret_cast<const char*>(&xp), sizeof(xp));
-}
+    if (type2.empty()) type = type1;
+    else type = type1 + "/" + type2;
 
-void PokemonInfo::deserialize(ifstream& file) {
-    streamsize len;
-
-    //extraigo el largo del tipo de pokemon, modifico el tamaño del atributo y guardo el str
-    file.read(reinterpret_cast<char*>(&len), sizeof(len));
-    type.resize(static_cast<long unsigned int>(len));
-    file.read(&type[0], static_cast<streamsize>(len));
-
-    //idem para la descripcion
-    file.read(reinterpret_cast<char*>(&len), sizeof(len));
-    description.resize(static_cast<long unsigned int>(len));
-    file.read(&description[0], len);
-
-    //extraigo la cantidad de ataques, y luego cada ataque con su nombre y daño
-    streamsize count;
-    file.read(reinterpret_cast<char*>(&count), sizeof(count));
-    attacks.clear();
-    for (int i = 0; i < count; i++) {
-        streamsize nameLen;
-        file.read(reinterpret_cast<char*>(&nameLen), sizeof(nameLen));
-        string name(static_cast<long unsigned int>(nameLen), ' ');
-        file.read(&name[0], nameLen);
-        size_t dmg;
-        file.read(reinterpret_cast<char*>(&dmg), sizeof(dmg));
-        attacks.emplace_back(name, dmg);
+    //separo todos los movimientos en un vector
+    vector<string> moveNames;
+    stringstream movesStream(movesList);
+    string move;
+    while (getline(movesStream, move, ';')) {
+        if (!move.empty()) moveNames.push_back(move);
     }
 
-    //extraigo la cantidad de xp restantes y los valores
-    file.read(reinterpret_cast<char*>(&count), sizeof(count));
-    xpRemaining.clear();
-    for (int i = 0; i < count; i++) {
-        size_t xp;
-        file.read(reinterpret_cast<char*>(&xp), sizeof(xp));
-        xpRemaining.push_back(xp);
+    //armo un map para guardar el poder de cada movimiento
+    unordered_map<string, size_t> movePower;
+    getline(movesDataFile, line);
+    while (getline(movesDataFile, line)) {
+        stringstream ss(line);
+        string moveName, powerStr;
+
+        //agarro el nombre del movimiento
+        getline(ss, moveName, ',');
+
+        //skipeo 3 columnas que no me interesan y guardo el poder del movimiento
+        for (int i = 0; i < 4; i++) getline(ss, powerStr, ',');
+
+        //guardo el poder del movimiento
+        movePower[moveName] = static_cast<size_t>(stoi(powerStr));
     }
+
+    //busco en el vector de movimientos el poder que figura en el map
+    for (const auto& move : moveNames) attacks.push_back({move, movePower[move]});
+
+    //para no saturar la terminal, limito la cantidad de ataques a 3 (como en la consigna basicamente)
+    attacks.resize(min(attacks.size(), static_cast<size_t>(3)));
+
+    pokeDataFile.close();
+    movesDataFile.close();
 }

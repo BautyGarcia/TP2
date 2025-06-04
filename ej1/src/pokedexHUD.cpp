@@ -4,7 +4,14 @@ vector<unsigned char*> cargarImagenesPokemones(vector<Pokemon> pokemons, vector<
     vector<unsigned char*> images;
 
     for (size_t i = 0; i < 3 && i < pokemons.size(); i++) {
-        string pokePath = "assets/" + pokemons[i].getName() + ".png";
+        if (pokemons[i].getName() == "Empty") {
+            continue;
+        }
+        //construyo el path de la imagen del pokemon
+        ostringstream pokedexIDStream;
+        pokedexIDStream << setw(3) << setfill('0') << pokemons[i].getPokedexID();
+        string pokePath = "assets/imgs/" + pokedexIDStream.str() + ".png";
+        
         if (!filesystem::exists(pokePath)) {
             throw runtime_error("fatal error: " + pokePath + ": No such file or directory");
             return {};
@@ -52,11 +59,40 @@ string barCreator(float percentage) {
     int used_chars = filled_blocks * BLOCK_SIZE;
     if (filled_blocks == 13) return bar;
 
-    // Si faltan caracteres, rellená hasta el anteúltimo con _
+    //si la barra no esta llena, la relleno como que esta vacia
     bar += string(TOTAL - used_chars - 1, '_');
-
-    // Agregá el caracter final '|'
     bar += '|';
-
     return bar;
+}
+
+void showOptions(size_t currentPage, size_t totalPages) {
+    cout << "1. Select a Pokemon" << endl;
+    cout << "2. Add Pokemon" << endl;
+    cout << "3. Remove Pokemon" << endl;
+
+    int num = 4;
+    if (totalPages > 1 && currentPage < totalPages) {
+        cout << num << ". Next Page" << endl;
+        num++;
+    }
+    if (currentPage > 1 && totalPages > 1) {
+        cout << num << ". Previous Page" << endl;
+        num++;
+    }
+    cout << num << ". Select a new Pokedex" << endl;
+    cout << num << ". Exit" << endl;
+}
+
+int emptysAndLeftTabs(vector<Pokemon> threePokemons, int MAX_TERM_WIDTH) {
+    //veo cuantos empty hay para ver si tengo que centrar al pokemon
+    int tabs = 0;
+    if (threePokemons[2].getName() == "Empty") tabs = 1;
+    if (threePokemons[1].getName() == "Empty") tabs = 4;
+
+    cout << "|";
+    for (int j = 0; j < tabs; j++) {
+        cout << string(MAX_TERM_WIDTH / 6 + 1, ' ');
+    }
+
+    return tabs;
 }

@@ -36,4 +36,5 @@ void printCentered(string text, int width);
 
 string barCreator(float percentage);
 
+int emptysAndLeftTabs(vector<Pokemon> pokemons, int width);
 #endif

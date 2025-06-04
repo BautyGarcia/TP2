@@ -24,7 +24,9 @@ class Pokemon {
     private:
         string name;
         size_t xp;
-    
+        size_t pokedexID;
+
+        void readData();
     public:
         Pokemon(string name);
         Pokemon(string name, size_t xp);
@@ -32,9 +34,11 @@ class Pokemon {
 
         void setName(const string& newName);
         void setXP(size_t newXP);
+        void setPokedexID(size_t id);
         
         string getName() const;
         size_t getXP() const;
+        size_t getPokedexID() const;
 
         void gainXP(size_t amount);
 

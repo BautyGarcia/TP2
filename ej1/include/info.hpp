@@ -17,6 +17,7 @@
 #include <set>
 #include <random>
 #include <sstream>
+#include <unordered_map>
 using namespace std;
 
 class PokemonInfo {
@@ -26,10 +27,12 @@ class PokemonInfo {
         vector<pair<string, size_t>> attacks;
         vector<size_t> xpRemaining;
 
+        void readData(size_t pokedexID);
     public:
         PokemonInfo();
         PokemonInfo(string type, string description);
         PokemonInfo(string type, string description, vector<pair<string, size_t>> attacks, vector<size_t> xpRemaining);
+        PokemonInfo(size_t pokedexID);
         
         void setType(const string& newType);
         void setDescription(const string& newDescription);
@@ -42,9 +45,6 @@ class PokemonInfo {
         vector<size_t> getXPRemaining() const;
 
         void addAttack(string attackName, size_t damage, size_t power);
-
-        void serialize(ofstream& filename) const;
-        void deserialize(ifstream& filename);
 };
 
 

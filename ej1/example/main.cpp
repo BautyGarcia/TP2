@@ -80,7 +80,7 @@ int main(){
     }
     
     cout << "Waiting 2 seconds to start the Pokedex..." << endl;
-    this_thread::sleep_for(chrono::seconds(2));
+    //this_thread::sleep_for(chrono::seconds(2));
 
     while (true){
         clearScreen();

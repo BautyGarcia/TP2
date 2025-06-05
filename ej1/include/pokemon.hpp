@@ -1,24 +1,7 @@
 #ifndef POKEMON_HPP
 #define POKEMON_HPP
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <memory>
-#include <utility>
-#include <fstream>
-#include <thread>
-#include <chrono>
-#include <set>
-#include <random>
-#include <sstream>
-#include <unordered_map>
-using namespace std;
+#include "libs.hpp"
 
 class Pokemon {
     private:
@@ -56,6 +39,5 @@ class PokeHash {
             return hash<string>()(poke.getName());
         }
 };
-
 
 #endif

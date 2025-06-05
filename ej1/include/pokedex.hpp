@@ -1,41 +1,23 @@
 #ifndef POKEDEX_HPP
 #define POKEDEX_HPP
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <memory>
-#include <utility>
-#include <fstream>
-#include <thread>
-#include <chrono>
-#include <set>
-#include <random>
-#include <sstream>
-#include <unordered_map>
-using namespace std;
-
-#include "info.hpp"
-#include "pokedexHUD.hpp"
+#include "libs.hpp"
+#include "pokemon.hpp" //necesito el PokeHash
 
 class Pokedex {
     private:
         size_t currentPage = 1;
         string saveName;
+        mutex pokedexMapMutex;
         unordered_map<Pokemon, PokemonInfo, PokeHash> pokes;
 
 
         int getPokemonLevel(const pair<Pokemon, PokemonInfo>& entry) const;
         string pokemonImagesRow(vector<Pokemon> pokemons, int withOfPrint) const;
-        void printThreePokes(vector<Pokemon> pokemons) const;
-        void printNames(const vector<Pokemon> pokemons) const;
-        void printXP(const vector<Pokemon> pokemons) const;
-        void printAttacks(const vector<Pokemon> pokemons) const;
+        void printThreePokes(string& output, vector<Pokemon> pokemons) const;
+        void printNames(string& output, const vector<Pokemon> pokemons) const;
+        void printXP(string& output, const vector<Pokemon> pokemons) const;
+        void printAttacks(string& output, const vector<Pokemon> pokemons) const;
 
         vector<string> getDataToPrint(pair<Pokemon, PokemonInfo> entry) const;
     public:
@@ -53,7 +35,8 @@ class Pokedex {
         void show(const Pokemon poke) const;
 
         void saveToFile();
-        void loadFromFile(const string& filename);
+        void loadFromFile(string filename);
 };
 
+void blockOfPokesToLoad(Pokedex* pokedex, const vector<Pokemon>& pokesDeserialized, size_t startOfBlock, size_t endOfBlock);
 #endif

@@ -1,5 +1,8 @@
 #define STB_IMAGE_IMPLEMENTATION
 #include "../include/pokedex.hpp"
+#include "../include/pokedexHUD.hpp"
+#include "../include/pokemon.hpp"
+#include "../include/info.hpp"
 
 //esto es el ancho maximo para que se printee la pokedex, el minimo es 47 pero no tiene en cuenta este valor.
 //si se pone un numero menor a 47, se acomoda la pokedex a 47 de ancho, sin embargo no se va a ver bien.
@@ -12,7 +15,7 @@ const int MAX_TERM_WIDTH = 75;
 const int POKES_PER_PAGE = 15;
 
 Pokedex::Pokedex(string name):
-    saveName(name), pokes()
+    saveName(name.ends_with(".bin") ? name : name + ".bin"), pokes()
 {}
 
 //cada pagina tiene un maximo de pokemones que se pueden mostrar, se define arriba
@@ -28,14 +31,21 @@ size_t Pokedex::getCurrentPage() const {
 void Pokedex::addPokemon(const Pokemon& pokemon) {
     if (pokemon.getPokedexID() == -1) {
         cout << "Not even the bests pokemon masters of all time know this Pokemon." << endl;
-        this_thread::sleep_for(chrono::seconds(1));
+        this_thread::sleep_for(chrono::seconds(3));
         return;
     }
-    if (pokes.find(pokemon) == pokes.end()) {
-        pokes[pokemon] = PokemonInfo(pokemon.getPokedexID());
-        return;
+
+    //creo el pokemon info de antemano para que no quede trabado por el lock
+    PokemonInfo info(pokemon.getPokedexID());
+    {
+        lock_guard<mutex> lock(pokedexMapMutex);
+        if (pokes.find(pokemon) == pokes.end()) {
+            pokes[pokemon] = info;
+            return;
+        }
     }
-    else cout << "Pokemon already exists in the Pokedex!" << endl;
+    cout << "Pokemon already exists in the Pokedex!" << endl;
+    this_thread::sleep_for(chrono::seconds(3));   
 }
 
 int Pokedex::getPokemonLevel(const pair<Pokemon, PokemonInfo>& entry) const {
@@ -85,16 +95,16 @@ void Pokedex::show(const Pokemon poke) const {
 }
 
 void Pokedex::show() const {
-    cout << string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 - saveName.length() % 2, '=') 
-        << " " + saveName + " " 
-        << string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 , '=') << endl;
+    string output = string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 - saveName.length() % 2, '=') 
+        += " " + saveName + " " 
+        += string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 , '=') += "\n";
     
     if (pokes.empty()) {
-        cout << "This pokedex is empty :(" << endl;
+        cout << output + "This pokedex is empty :(" << endl;
         return;
     }
 
-    cout << " " << string(MAX_TERM_WIDTH * 2 + 4, '_') << " " << endl;
+    output += " " + string(MAX_TERM_WIDTH * 2 + 4, '_') + " " + "\n";
 
     
 
@@ -110,9 +120,9 @@ void Pokedex::show() const {
 
         //solo entran 3 pokemones por fila (si se amontonan creo que pueden entrar 4 pero al pedo)
         if (threePokemons.size() == 3) {
-            printThreePokes(threePokemons);
+            printThreePokes(output, threePokemons);
             threePokemons.clear();
-            cout << "|" << string(MAX_TERM_WIDTH * 2 / 3, '_') << "||" << string(MAX_TERM_WIDTH * 2 / 3, '_') << "||" << string(MAX_TERM_WIDTH * 2 / 3, '_') << "|" << endl;
+            output += "|" + string(MAX_TERM_WIDTH * 2 / 3, '_') + "||" + string(MAX_TERM_WIDTH * 2 / 3, '_') + "||" + string(MAX_TERM_WIDTH * 2 / 3, '_') + "|" + "\n";
         }
         currentPoke++;
     }
@@ -125,16 +135,17 @@ void Pokedex::show() const {
             threePokemons.push_back(Pokemon("Empty"));
             numOfEmptys++;
         }
-        printThreePokes(threePokemons);
-        if (numOfEmptys == 1) cout << "|" << string(MAX_TERM_WIDTH + 1, '_') << "||" << string(MAX_TERM_WIDTH + 1, '_') << "|" << endl;
-        if (numOfEmptys == 2) cout << "|" << string(MAX_TERM_WIDTH * 2 + 4, '_') << "|" << endl;
+        printThreePokes(output, threePokemons);
+        if (numOfEmptys == 1) output += "|" + string(MAX_TERM_WIDTH + 1, '_') + "||" + string(MAX_TERM_WIDTH + 1, '_') + "|" + "\n";
+        if (numOfEmptys == 2) output += "|" + string(MAX_TERM_WIDTH * 2 + 4, '_') + "|" + "\n";
     }
+    cout << output;
 }
 
 void Pokedex::saveToFile() {
     //abro el archivo en modo binario
     //se guarda en ej1/build/bin/
-    ofstream file("bin/" + saveName + ".bin", ios::binary);
+    ofstream file("bin/" + saveName, ios::binary);
     if (!file.is_open()) {
         cout << "Error opening file for writing." << endl;
         return;
@@ -152,27 +163,55 @@ void Pokedex::saveToFile() {
     file.close();
 }
 
-void Pokedex::loadFromFile(const string& filename) {
-    //busco el archivo para cargar
-    ifstream file("bin/" + filename + ".bin", ios::binary);
+//cargo los pokemones de un archivo binario (como para cargar la pokedex All Unlocked tardaba 20 segundos, use threads)
+void Pokedex::loadFromFile(string filename) {
+    ifstream file("bin/" + filename, ios::binary);
     if (!file.is_open()) {
         cout << "Pokedex record doesnt exists." << endl;
         return;
     }
 
-    //veo cuantos pokemones se habian guardado
     size_t count;
     file.read(reinterpret_cast<char*>(&count), sizeof(count));
-    
-    //agrego los pokemones extraidos a la pokedex
+    vector<Pokemon> pokesDeserialized;
+    pokesDeserialized.reserve(count);
+
+    //deserializo todos los pokemones y los guardo en un vector
     for (size_t i = 0; i < count; i++) {
         Pokemon poke("");
         poke.deserialize(file);
-        addPokemon(poke);
+        pokesDeserialized.push_back(poke);
+    }
+    file.close();
+
+    //veo cuantas threads hay disponibles
+    size_t numThreads = thread::hardware_concurrency();
+    if (numThreads == 0) numThreads = 4;
+    if (numThreads > count) numThreads = count;
+
+    size_t blockSize = count / numThreads;
+    size_t remainder = count % numThreads;
+
+    vector<thread> threads;
+    size_t current = 0;
+
+    for (size_t t = 0; t < numThreads; t++) {
+        size_t start = current;
+        size_t end = start + blockSize + (t < remainder ? 1 : 0);
+
+        threads.emplace_back(blockOfPokesToLoad, this, pokesDeserialized, start, end);
+        current = end;
     }
 
-    file.close();
+    for (auto& th : threads) th.join();
 }
+
+//funcion que se encarga de tomar un bloque de pokemones y cargarlos en la pokedex
+//esto es para asignarle a cada thread un bloque de pokemones y laburen cada una con su parte designada
+void blockOfPokesToLoad(Pokedex* pokedex, const vector<Pokemon>& pokesDeserialized, size_t startOfBlock, size_t endOfBlock){
+    for (size_t i = startOfBlock; i < endOfBlock; i++) pokedex->addPokemon(pokesDeserialized[i]);
+}
+
 
 //============ METODOS PESADOS PARA IMPRIMIR LA POKEDEX (PRIVADOS) ============//
 string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrints) const {
@@ -288,117 +327,117 @@ string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrin
     return output;
 }
 
-void Pokedex::printThreePokes(vector<Pokemon> threePokemons) const {
+void Pokedex::printThreePokes(string& output, vector<Pokemon> threePokemons) const {
     //printeo las imagenes
-    cout << pokemonImagesRow(threePokemons, 15);
+    output += pokemonImagesRow(threePokemons, 15);
     for (int i = 0; i < 3; i++) {
         if (threePokemons[i].getName() == "Empty") break;
-        int tabs = emptysAndLeftTabs(threePokemons, MAX_TERM_WIDTH);
+        int tabs = emptysAndLeftTabs(output, threePokemons, MAX_TERM_WIDTH);
     
-        cout << string(MAX_TERM_WIDTH * 2 / 3, ' ');
+        output += string(MAX_TERM_WIDTH * 2 / 3, ' ');
 
         //agrego los tabs de la derecha
         for (int j = 0; j < tabs; j++) {
-            cout << string(MAX_TERM_WIDTH / 6 + 1, ' ');
+            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         }
-        cout << "|";
+        output += "|";
     }
-    cout << endl;
-    printNames(threePokemons);
-    printXP(threePokemons);
-    printAttacks(threePokemons);
+    output += "\n";
+    printNames(output, threePokemons);
+    printXP(output, threePokemons);
+    printAttacks(output, threePokemons);
 }
 
-void Pokedex::printNames(const vector<Pokemon> threePokemons) const {
+void Pokedex::printNames(string& output, const vector<Pokemon> threePokemons) const {
     for (int i = 0; i < 3; i++) {
         if (threePokemons[i].getName() == "Empty") break;
-        int tabs = emptysAndLeftTabs(threePokemons, MAX_TERM_WIDTH);
+        int tabs = emptysAndLeftTabs(output, threePokemons, MAX_TERM_WIDTH);
         
         //saco el nivel del pokemon
         int level = getPokemonLevel({threePokemons[i], pokes.at(threePokemons[i])});
         string levelStr = (level >= 0) ? " (Level: " + to_string(level) + ")" : " (Max Level)";
 
         //multiplico por 2 porque el ancho se mide con un ratio de 2 caracteres por pixel
-        printCentered(threePokemons[i].getName() + levelStr, MAX_TERM_WIDTH * 2 / 3);
+        printCentered(output, threePokemons[i].getName() + levelStr, MAX_TERM_WIDTH * 2 / 3);
 
         //agrego los tabs de la derecha
         for (int j = 0; j < tabs; j++) {
-            cout << string(MAX_TERM_WIDTH / 6 + 1, ' ');
+            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         }
-        cout << "|";
+        output += "|";
     }
-    cout << endl;
+    output += "\n";
 }
 
-void Pokedex::printXP(const vector<Pokemon> threePokemons) const {
+void Pokedex::printXP(string& output, const vector<Pokemon> threePokemons) const {
     //printeo la barra de experiencia de cada pokemon
     for (int i = 0; i < 3; i++) {
         if (threePokemons[i].getName() == "Empty") break;
-        int tabs = emptysAndLeftTabs(threePokemons, MAX_TERM_WIDTH);
+        int tabs = emptysAndLeftTabs(output, threePokemons, MAX_TERM_WIDTH);
         
         int level = getPokemonLevel({threePokemons[i], pokes.at(threePokemons[i])});
         float xpPercentage = static_cast<float>(threePokemons[i].getXP()) / pokes.at(threePokemons[i]).getXPRemaining()[level] * 100;
         string levelBarStr = (level >= 0) ? barCreator(xpPercentage) : barCreator(100.0f);
-        cout << string(MAX_TERM_WIDTH / 3 - 13, ' ') << levelBarStr << string(MAX_TERM_WIDTH / 3 - 13, ' ');
+        output += string(MAX_TERM_WIDTH / 3 - 13, ' ') + levelBarStr + string(MAX_TERM_WIDTH / 3 - 13, ' ');
 
         //agrego los tabs de la derecha
         for (int j = 0; j < tabs; j++) {
-            cout << string(MAX_TERM_WIDTH / 6 + 1, ' ');
+            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         }
-        cout << "|";
+        output += "|";
     }
-    cout << endl;
+    output += "\n";
 
     //printeo cuanta experiencia le falta al pokemon para evolucionar
     for (int i = 0; i < 3; i++) {
         if (threePokemons[i].getName() == "Empty") break;
-        int tabs = emptysAndLeftTabs(threePokemons, MAX_TERM_WIDTH);
+        int tabs = emptysAndLeftTabs(output, threePokemons, MAX_TERM_WIDTH);
         
         int level = getPokemonLevel({threePokemons[i], pokes.at(threePokemons[i])});
         if (level >= 0) {
             size_t xpNeeded = pokes.at(threePokemons[i]).getXPRemaining()[level];
             size_t xpCurrent = threePokemons[i].getXP();
             string xpStr = to_string(xpCurrent) + "/" + to_string(xpNeeded);
-            printCentered(xpStr, MAX_TERM_WIDTH * 2 / 3);
+            printCentered(output, xpStr, MAX_TERM_WIDTH * 2 / 3);
         } else {
-            printCentered("Max Level", MAX_TERM_WIDTH * 2 / 3);
+            printCentered(output, "Max Level", MAX_TERM_WIDTH * 2 / 3);
         }
 
         //agrego los tabs de la derecha
         for (int j = 0; j < tabs; j++) {
-            cout << string(MAX_TERM_WIDTH / 6 + 1, ' ');
+            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         }
-        cout << "|";
+        output += "|";
     }
-    cout << endl;
+    output += "\n";
 }
 
-void Pokedex::printAttacks(const vector<Pokemon> threePokemons) const {
+void Pokedex::printAttacks(string& output, const vector<Pokemon> threePokemons) const {
     //printeo el titulo de ataques
     for (int i = 0; i < 3; i++) {
         if (threePokemons[i].getName() == "Empty") break;
-        int tabs = emptysAndLeftTabs(threePokemons, MAX_TERM_WIDTH);
+        int tabs = emptysAndLeftTabs(output, threePokemons, MAX_TERM_WIDTH);
         
-        if (pokes.at(threePokemons[i]).getAttacks().size()) printCentered("Attacks:", MAX_TERM_WIDTH * 2 / 3);
-        else printCentered(threePokemons[i].getName() + " has no attacks.", MAX_TERM_WIDTH * 2 / 3);
+        if (pokes.at(threePokemons[i]).getAttacks().size()) printCentered(output, "Attacks:", MAX_TERM_WIDTH * 2 / 3);
+        else printCentered(output, threePokemons[i].getName() + " has no attacks.", MAX_TERM_WIDTH * 2 / 3);
         
         //agrego los tabs de la derecha
         for (int j = 0; j < tabs; j++) {
-            cout << string(MAX_TERM_WIDTH / 6 + 1, ' ');
+            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         }
-        cout << "|";
+        output += "|";
     }
-    cout << endl;
+    output += "\n";
 
     //printeo los primeros 3 ataques de cada pokemon
     for (size_t attack = 0; attack < 3; attack++) {
         for (int poke = 0; poke < 3; poke++) {
             if (threePokemons[poke].getName() == "Empty") break;
-            int tabs = emptysAndLeftTabs(threePokemons, MAX_TERM_WIDTH);
+            int tabs = emptysAndLeftTabs(output, threePokemons, MAX_TERM_WIDTH);
 
             if (attack >= pokes.at(threePokemons[poke]).getAttacks().size()) {
-                printCentered("", MAX_TERM_WIDTH * 2 / 3);
-                if (poke < 2) cout << "|";
+                printCentered(output, "", MAX_TERM_WIDTH * 2 / 3);
+                if (poke < 2) output += "|";
                 continue;
             }
         
@@ -407,15 +446,15 @@ void Pokedex::printAttacks(const vector<Pokemon> threePokemons) const {
             if (attack < attacks.size()) {
                 attackStr = attacks[attack].first + " (Power: " + to_string(attacks[attack].second) + ")";
             }
-            printCentered(attackStr, MAX_TERM_WIDTH * 2 / 3);
+            printCentered(output, attackStr, MAX_TERM_WIDTH * 2 / 3);
 
             //agrego los tabs de la derecha
             for (int j = 0; j < tabs; j++) {
-                cout << string(MAX_TERM_WIDTH / 6 + 1, ' ');
+                output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
             }
-            cout << "|";
+            output += "|";
         }
-        cout << endl;
+        output += "\n";
     }
 }
 

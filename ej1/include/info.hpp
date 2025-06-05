@@ -1,24 +1,7 @@
 #ifndef INFO_HPP
 #define INFO_HPP
 
-#include <iostream>
-#include <iomanip>
-#include <string>
-#include <vector>
-#include <algorithm>
-#include <cmath>
-#include <cstdlib>
-#include <ctime>
-#include <memory>
-#include <utility>
-#include <fstream>
-#include <thread>
-#include <chrono>
-#include <set>
-#include <random>
-#include <sstream>
-#include <unordered_map>
-using namespace std;
+#include "libs.hpp"
 
 class PokemonInfo {
     private:

@@ -1,6 +1,10 @@
 cmake_minimum_required(VERSION 3.10)
 project(ej2)
 
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
+set(CMAKE_CXX_EXTENSIONS OFF)
+
 #declaro que archivos debe compilar
 file(GLOB SOURCE src/*.cpp example/main.cpp)
 add_executable(main ${SOURCE})

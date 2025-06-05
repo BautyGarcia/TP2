@@ -1,0 +1,17 @@
+ej1/build/bin
+ej1/build/CMakeFiles
+ej1/build/CMakeCache.txt
+ej1/build/cmake_install.cmake
+ej1/build/Makefile
+
+ej2/build/bin
+ej2/build/CMakeFiles
+ej2/build/CMakeCache.txt
+ej2/build/cmake_install.cmake
+ej2/build/Makefile
+
+ej3/build/bin
+ej3/build/CMakeFiles
+ej3/build/CMakeCache.txt
+ej3/build/cmake_install.cmake
+ej3/build/Makefile

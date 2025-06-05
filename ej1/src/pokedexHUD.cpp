@@ -135,6 +135,14 @@ void handleShowPokemon(Pokedex& pokedex) {
         cin >> name;
     }
 
+    // Capitalize only the first letter, rest lowercase
+    if (!name.empty()) {
+        name[0] = toupper(name[0]);
+        for (size_t i = 1; i < name.size(); ++i) {
+            name[i] = tolower(name[i]);
+        }
+    }
+
     clearScreen();
     pokedex.show(Pokemon(name));
     cout << endl << "Press enter to continue...";

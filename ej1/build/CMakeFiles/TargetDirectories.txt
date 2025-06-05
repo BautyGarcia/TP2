@@ -1,4 +1,0 @@
-/Users/bautygarcia/projects/udesa/TP2/ej1/build/CMakeFiles/main.dir
-/Users/bautygarcia/projects/udesa/TP2/ej1/build/CMakeFiles/run.dir
-/Users/bautygarcia/projects/udesa/TP2/ej1/build/CMakeFiles/edit_cache.dir
-/Users/bautygarcia/projects/udesa/TP2/ej1/build/CMakeFiles/rebuild_cache.dir

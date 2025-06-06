@@ -36,7 +36,7 @@ void Pokedex::addPokemon(const Pokemon& pokemon) {
     }
 
     //creo el pokemon info de antemano para que no quede trabado por el lock
-    PokemonInfo info(pokemon.getPokedexID());
+    PokemonInfo info(pokemon.getName());
     {
         lock_guard<mutex> lock(pokedexMapMutex);
         if (pokes.find(pokemon) == pokes.end()) {

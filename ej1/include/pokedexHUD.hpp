@@ -19,11 +19,5 @@ int showOptions(size_t currentPage, size_t totalPages);
 
 int emptysAndLeftTabs(string& output, vector<Pokemon> pokemons, int width);
 
-void handleAddPokemon(Pokedex& pokedex);
-void handleShowPokemon(Pokedex& pokedex);
-void handlePageOrPokedexChange(Pokedex& pokedex, int option);
-
-int askForPokedex(vector<string> savedPokedexes);
-
 void loadingScreen();
 #endif

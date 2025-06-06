@@ -1,12 +1,13 @@
 #include "../include/pokemon.hpp"
+#include "../include/utils.hpp"
 
 Pokemon::Pokemon(string n):
     name(n), xp(0), pokedexID(-1)
-{readData();}
+{if (pokemonDataBase.find(n) != pokemonDataBase.end()) pokedexID = pokemonDataBase[n].pokedexID;}
 
 Pokemon::Pokemon(string n, size_t x):
     name(n), xp(x), pokedexID(-1)
-{readData();}
+{if (pokemonDataBase.find(n) != pokemonDataBase.end()) pokedexID = pokemonDataBase[n].pokedexID;}
 
 Pokemon::Pokemon(const Pokemon& other):
     name(other.name), xp(other.xp), pokedexID(other.pokedexID)
@@ -74,34 +75,4 @@ bool Pokemon::operator<(const Pokemon& other) const {
 
 bool Pokemon::operator==(const Pokemon& other) const {
     return name == other.name;
-}
-
-//============ READ DATA (PRIVADO) ============//
-void Pokemon::readData() {
-    ifstream file("assets/data/pokemons.csv");
-    string line;
-    if (!file.is_open()) {
-        cerr << "Error opening pokemons data file." << endl;
-        return;
-    }
-
-    getline(file, line);
-    while (getline(file, line)) {
-        stringstream ss(line);
-        string value;
-        
-        //agarro el numero de pokedex
-        getline(ss, value, ',');
-        int number = stoi(value);
-
-        //agarro el nombre del pokemon
-        getline(ss, value, ',');
-        string nameInFile = value;
-
-        if (nameInFile == name) {
-            pokedexID = number;
-            break;
-        }
-    }
-    file.close();
 }

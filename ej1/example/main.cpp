@@ -2,44 +2,24 @@
 #include "../include/pokedexHUD.hpp"
 #include "../include/pokemon.hpp"
 #include "../include/info.hpp"
+#include "../include/utils.hpp"
 
 atomic<bool> isLoading(true);
 
-void createFullPokedex(Pokedex& pokedex);
-void createFullPokedex(Pokedex& pokedex) {
-    ifstream file("assets/data/pokemons.csv");
-    if (!file.is_open()) {
-        cout << "Error opening pokemons data file." << endl;
-        return;
-    }
-
-    string line;
-    getline(file, line);
-    while (getline(file, line)) {
-        stringstream ss(line);
-        string name;
-
-        //skipeo el numero de pokedex y saco el nombre
-        getline(ss, name, ',');
-        getline(ss, name, ',');
-
-        //lo meto en la pokedex
-        pokedex.addPokemon(Pokemon(name));
-    }
-}
-
 int main(){
-    string folder = "./bin";
-    vector<string> savedPokedexes;
+    //cargo todos los pokemones a la base de datos
+    loadPokemonDataBase();
 
     //script de stack overflow para extraer los nombres de los archivos .bin de una carpeta
+    string folder = "./bin";
+    vector<string> savedPokedexes;
     for (const auto& entry : filesystem::directory_iterator(folder)) {
         if (filesystem::is_regular_file(entry) && entry.path().extension() == ".bin") {
             savedPokedexes.push_back(entry.path().filename().string());
         }
     }
 
-    //el usuario elige una pokedex de las que estan guardadas
+    //el usuario elige una pokedex de las que estan guardadas o crear una nueva
     int selectedPokedex = askForPokedex(savedPokedexes);
     if (selectedPokedex == -1) return 0;
 
@@ -51,10 +31,12 @@ int main(){
         string inputLine;
         getline(cin, inputLine);
         pokedexName = inputLine;
+        
         while (pokedexName.empty()) {
             cout << "Enter a valid name.";
             cin.clear();
             this_thread::sleep_for(chrono::seconds(1));
+
             clearScreen();
             cout << "Write a name for your new Pokedex: ";
             getline(cin, inputLine);
@@ -69,20 +51,17 @@ int main(){
         //aviso que esta cargando la pokedex
         isLoading = true;
 
-        auto startTime = high_resolution_clock::now();
+        //mando la thread de la pantalla de carga a laburar
         thread loading(loadingScreen);
         pokedex.loadFromFile(pokedexName);
+
+        //cuando termina de cargar los pokemones, aviso a la pantalla de carga que se puede volver a dormir
         isLoading = false;
-        loading.join();
-        auto endTime = high_resolution_clock::now();
-        auto elapsedTime = duration_cast<seconds>(endTime - startTime);
-        cout << "Time: " << elapsedTime.count() << " seconds." << endl;
+        loading.join(); //este muñeco parece que no sirve mucho pero por temas de timing es mas seguro tenerlo
     }
-    
-    cout << "Waiting 2 seconds to start the Pokedex..." << endl;
-    //this_thread::sleep_for(chrono::seconds(2));
 
     while (true){
+        
         clearScreen();
         pokedex.show();
         cout << endl << endl;
@@ -110,7 +89,7 @@ int main(){
             case 0: pokedex.saveToFile(); return 0;
             case 1: handleAddPokemon(pokedex); break;
             case 2: handleShowPokemon(pokedex); break;
-            default: handlePageOrPokedexChange(pokedex, option); break;
+            default: handlePage(pokedex, option); break;
         }
     }
     return 0;

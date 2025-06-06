@@ -12,8 +12,7 @@ class PokemonInfo {
 
         //pongo el constructor privado ya que este depende uncamente del pokemon al que se le asigne, no me interesa tener un 
         //PokemonInfo sin un Pokemon por lo que hago friend a Pokedex para que sea la unica forma de crear un PokemonInfo
-        PokemonInfo(int pokedexID);
-        void readData(int pokedexID);
+        PokemonInfo(string name);
     public:
         PokemonInfo() = default;
 

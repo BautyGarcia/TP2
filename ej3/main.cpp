@@ -20,6 +20,9 @@ mutex tareasMutex;
 condition_variable cv;
 int sensorsFinished = 0;
 
+// Para que no se puedan repetir los id de tareas
+int uuid = 0;
+
 int getRandom(int min, int max) {
     return min + rand() % (max - min + 1);
 }
@@ -58,13 +61,13 @@ void sensor(int id) {
         unique_lock<mutex> lock(tareasMutex);
 
         // Hago la task de este actor
-        int idTarea = getRandom(1, 1000);
-        Tarea tarea = {id, idTarea, "Tarea " + to_string(idTarea)};
-        tareas.push(tarea);
-        cout << "Pushee tarea " << tarea.descripcion << endl;
+        int idTarea = uuid++;
+        string descripcion = "Tarea " + to_string(idTarea);
+        tareas.push({id, idTarea, descripcion});
+        cout << "Pushee tarea " << descripcion << endl;
 
         // Despierto a todos los threads que estan esperando por una tarea
-        cv.notify_all();
+        cv.notify_one();
     }
 
     // Updateo el sensorFinished protegido por el lock por si hay algun race condition

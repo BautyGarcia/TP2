@@ -9,9 +9,8 @@ void DronCamp::flight(int drone) {
     cout << "Dron " << drone << " esperando para despegar..." << endl;
     output.unlock();
 
-    // ocupo las zonas
-    zonas[left].lock();
-    zonas[right].lock();
+    // lockeo las zonas (se ve que este lock ya tiene la logica para evitar deadlocks)
+    lock(zonas[left], zonas[right]);
 
     output.lock();
     cout << "Dron " << drone << " despegando..." << endl;

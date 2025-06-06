@@ -3,7 +3,8 @@
 #include "../include/pokemon.hpp"
 #include "../include/pokedexHUD.hpp"
 
-unordered_map<string, PokemonInfoMapped> pokemonDataBase;
+unordered_map<size_t, PokemonInfoMapped> pokemonDataBase;
+unordered_map<string, size_t> standardNameToPokedexID;
 
 void handleAddPokemon(Pokedex& pokedex) {
     string name;
@@ -12,16 +13,21 @@ void handleAddPokemon(Pokedex& pokedex) {
     while (name.empty()) {
         cout << "Enter a valid name.";
         this_thread::sleep_for(chrono::seconds(2));
+
+        //esto borra una linea de la terminal
         cout << "\033[A\33[2K";
+
         cin.clear();
         getline(cin, name);
     }
+
+    //hago todo el nombre minuscula para que no sea case sensitive
     if (!name.empty()) {
-        name[0] = toupper(name[0]);
-        for (size_t i = 1; i < name.size(); i++) {
-            name[i] = tolower(name[i]);
-        }
+        for (size_t i = 0; i < name.size(); i++) name[i] = tolower(name[i]);
     }
+
+    //para terminar de evitar case sensivility, llamo al constructor con el nombre estandarizado y el mismo constructor
+    //se encarga de buscar el ID del pokedex y que el nombre sea correcto
     pokedex.addPokemon(Pokemon(name));
 }
 
@@ -32,24 +38,29 @@ void handleShowPokemon(Pokedex& pokedex) {
     while (name.empty()) {
         cout << "Enter a valid name.";
         this_thread::sleep_for(chrono::seconds(2));
+
+        //esto borra una linea de la terminal
         cout << "\033[A\33[2K";
+
         cin.clear();
         getline(cin, name);
     }
+    
+    //hago todo el nombre minuscula para que no sea case sensitive
     if (!name.empty()) {
-        name[0] = toupper(name[0]);
-        for (size_t i = 1; i < name.size(); i++) {
-            name[i] = tolower(name[i]);
-        }
+        for (size_t i = 0; i < name.size(); i++) name[i] = tolower(name[i]);
     }
+
     clearScreen();
+
+    //para terminar de evitar case sensivility, llamo al constructor con el nombre estandarizado y el mismo constructor
+    //se encarga de buscar el ID del pokedex y que el nombre sea correcto
     pokedex.show(Pokemon(name));
     cout << endl << "Press enter to continue...";
-    string dummy;
-    getline(cin, dummy);
+    string _;
+    getline(cin, _);
 }
 
-//devuelve true si hay que cambiar de pokedex y false si solo hay que cambiar de pagina
 void handlePage(Pokedex& pokedex, int option) {
     if (option == 3) {
         if (pokedex.getCurrentPage() < pokedex.getTotalPages()) pokedex.nextPage();
@@ -94,6 +105,7 @@ int askForPokedex(vector<string> savedPokedexes) {
         ss >> option;
     }
 
+    //para salir del programa devuelvo -1, para crear una nueva pokedex 0
     if (option == static_cast<int>(num)) return -1;
     if (option == static_cast<int>(num - 1)) return 0;
     return option;
@@ -137,6 +149,12 @@ void loadPokemonDataBase(){
         //nombre del pokemon
         getline(ss, name, ',');
 
+        //voy guardando el nombreEstandarizado,numPokedex
+        string standardName = name;
+        for (size_t i = 0; i < standardName.size(); i++) standardName[i] = tolower(name[i]);
+        
+        standardNameToPokedexID[standardName] = pokedexID;
+
         //ambos tipos posibles
         getline(ss, type1, ',');
         getline(ss, type2, ',');
@@ -165,14 +183,15 @@ void loadPokemonDataBase(){
 
         //creo un PokemonInfoMapped y lo guardo en el map pokemonDataBase
         PokemonInfoMapped info;
-        info.pokedexID = pokedexID;
+        info.name = name;
         info.type = type1 + (type2.empty() ? "" : "/" + type2);
         info.description = description;
         info.xpRemaining = xpRemaining;
 
-        //guardo cada movimiento y el poder que tiene
+        //guardo cada movimiento y el poder que tiene (limito a 10 ataques para no saturar la terminal)
         for (const auto& move : moveNames) info.attacks.push_back({move, movePower[move]});
+        info.attacks.resize(min(info.attacks.size(), static_cast<size_t>(10)));
 
-        pokemonDataBase[name] = info;
+        pokemonDataBase[pokedexID] = info;
     }
 };

@@ -1,29 +1,27 @@
 # TP2
 
-Para el ej 1:
-Use un archivo de una libreria de internet (esta en los includes es el unico .h)
+# Para corre el ej 1:
+Pararse en la carpeta build: 
+
+    cd ej1/build
+
+y construir el CMake:
+
+    cmake ..
+
+Una vez creado el CMake, compilar con make y correr con bin/main
+
+# IMPORTANTE:
+- Correr con la terminal en pantalla completa y lo mas despejada posible (se recomienda ocultar la barra de los costados)
+- En caso de que los pokemones se vean cortados o mal, revisar pokedex.cpp y modificar siguiendo las instrucciones indicadas el valor de MAX_TERM_WIDTH
+- Hay cargadas 2 pokedexes que se pueden utilizar para una mejor experiencia:
+    - All Unlocked: como su nombre indica, estan todos los pokemones cargados (desbloqueados)
+    - tests: estan cargados los primeros 51 pokemones y algunos mas. Se recomienda usar esta para poder probar una pokedex dividida en paginas pudiendo llegar al final de la misma y agregar pokemones
+    - Crear una nueva: ademas, esta la opcion de crear una nueva pokedex sin pokemones para probar todo de 0
+
+La parte de consigna esta hecha totalmente por nosotros, sin embargo para poder hacer las imagenes de los pokemones en la terminal se uso una libreria externa "stb_image.h" del siguiente repositorio:
 
 https://github.com/nothings/stb
-
-asi que despues vemos si hay que decirlo o nombrarlo (le damos creditos al muchacho)
-
-correlo con la terminal en pantalla completa o lo mas grande que puedas, oculta el cursor y todo lo que te achique la terminal
-lo importante es el ancho, si no te sale bien a la primera seria medio troll (me pondria triste)
-sino anda a pokedex.cpp y fijate el texto que hay arriba de MAX_TERM_WIDTH (esta arriba del todo)
-
-para correrlo con el cmake parate en la carpeta build
-tira cmake ..
-y ahi nomas clear && make
-cuando se compile tira bin/main 
-then enjoy
-
-hola :)
-
-hay que cambiar el coso este aclarando que se necesita lo que pida el cmake y el paso a paso
-
-Para preguntar:
-- el cmake lo dejo creado o vacio build
-- que carajo pongo aca que se necesite (version de cmake minima 🤌)
 
 ### Consideracion a preguntar del 3
 

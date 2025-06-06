@@ -11,9 +11,9 @@ class Pokedex {
         mutex pokedexMapMutex;
         unordered_map<Pokemon, PokemonInfo, PokeHash> pokes;
 
-
+        //aca hay mucha cosa que se encarga de imprimir la interfaz, todo lo maneja show(...) asi que no me interesa hacerlo publico
         int getPokemonLevel(const pair<Pokemon, PokemonInfo>& entry) const;
-        string pokemonImagesRow(vector<Pokemon> pokemons, int withOfPrint) const;
+        string createPokeImages(vector<Pokemon> pokemons, int withOfPrint) const;
         void printThreePokes(string& output, vector<Pokemon> pokemons) const;
         void printNames(string& output, const vector<Pokemon> pokemons) const;
         void printXP(string& output, const vector<Pokemon> pokemons) const;
@@ -36,6 +36,7 @@ class Pokedex {
 
         void saveToFile();
         void loadFromFile(string filename);
+
 };
 
 void blockOfPokesToLoad(Pokedex* pokedex, const vector<Pokemon>& pokesDeserialized, size_t startOfBlock, size_t endOfBlock);

@@ -12,7 +12,7 @@ class PokemonInfo {
 
         //pongo el constructor privado ya que este depende uncamente del pokemon al que se le asigne, no me interesa tener un 
         //PokemonInfo sin un Pokemon por lo que hago friend a Pokedex para que sea la unica forma de crear un PokemonInfo
-        PokemonInfo(string name);
+        PokemonInfo(size_t pokedexID);
     public:
         PokemonInfo() = default;
 
@@ -25,9 +25,7 @@ class PokemonInfo {
         string getDescription() const;
         vector<pair<string, size_t>> getAttacks() const;
         vector<size_t> getXPRemaining() const;
-
-        void addAttack(string attackName, size_t damage, size_t power);
-
+        
         friend class Pokedex;
 };
 

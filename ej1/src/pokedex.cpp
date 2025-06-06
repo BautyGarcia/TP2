@@ -14,11 +14,12 @@ const int MAX_TERM_WIDTH = 75;
 //se puede poner cualquier valor pero si es muy grande puede llegar a cortarse por no entrar en la terminal
 const int POKES_PER_PAGE = 15;
 
+//con el ternario ese no me importa si al asignar el nombre a la pokedex el ususario escribio .bin o no
 Pokedex::Pokedex(string name):
     saveName(name.ends_with(".bin") ? name : name + ".bin"), pokes()
 {}
 
-//cada pagina tiene un maximo de pokemones que se pueden mostrar, se define arriba
+//cada pagina tiene un maximo de pokemones que se pueden mostrar, se define arriba. Esto calcula cuantas paginas hay en total
 size_t Pokedex::getTotalPages() const {
     return pokes.size() / POKES_PER_PAGE + (pokes.size() % POKES_PER_PAGE != 0 ? 1 : 0);
 }
@@ -27,8 +28,9 @@ size_t Pokedex::getCurrentPage() const {
     return currentPage;
 }
 
-//PokemonInfo se crea automaticamente segun el pokemon que se haya pasado
+//PokemonInfo se crea automaticamente segun el pokemon que se haya pasado, por esto puse el constructor privado
 void Pokedex::addPokemon(const Pokemon& pokemon) {
+    //si el pokemon no existe en la base de datos de base tenia -1 como id, por lo que nunca se lo cambiaron
     if (pokemon.getPokedexID() == -1) {
         cout << "Not even the bests pokemon masters of all time know this Pokemon." << endl;
         this_thread::sleep_for(chrono::seconds(3));
@@ -36,8 +38,10 @@ void Pokedex::addPokemon(const Pokemon& pokemon) {
     }
 
     //creo el pokemon info de antemano para que no quede trabado por el lock
-    PokemonInfo info(pokemon.getName());
+    PokemonInfo info(pokemon.getPokedexID());
     {
+        //este lock hace que se agreguen pokemones de a uno. Lo pesado que me ahorro con el multitreading en realidad es la
+        //creacion del PokemonInfo, como pueden haber hasta 800 pokemones mas o menos, hace diferencia
         lock_guard<mutex> lock(pokedexMapMutex);
         if (pokes.find(pokemon) == pokes.end()) {
             pokes[pokemon] = info;
@@ -51,11 +55,9 @@ void Pokedex::addPokemon(const Pokemon& pokemon) {
 int Pokedex::getPokemonLevel(const pair<Pokemon, PokemonInfo>& entry) const {
     //devuelve el nivel del pokemon en base a su xp
     for (int i = 0; i < static_cast<int>(entry.second.getXPRemaining().size()); i++) {
-        if (entry.second.getXPRemaining()[i] > entry.first.getXP()) {
-            return i;
-        }
+        if (entry.second.getXPRemaining()[i] > entry.first.getXP()) return i;
     }
-    return -1;
+    return -1; //devuelve -1 si esta a nivel max (para verlo de afuera)
 }
 
 void Pokedex::show(const Pokemon poke) const {
@@ -65,29 +67,20 @@ void Pokedex::show(const Pokemon poke) const {
         //si encuentro el pokemon, muestro su info
         if (entry.first == poke){
             vector<string> data = getDataToPrint(entry);
-            string image = pokemonImagesRow({entry.first, Pokemon("Empty"), Pokemon("Empty")}, 30);
+            string image = createPokeImages({entry.first, Pokemon("Empty"), Pokemon("Empty")}, 30);
 
             //separo la imagen en lineas para printear la info a la derecha
             vector<string> imageLines;
             istringstream stream(image);
             string imageSingleLine;
-            while (getline(stream, imageSingleLine)) {
-                imageLines.push_back(imageSingleLine);
-            }
-
+            while (getline(stream, imageSingleLine)) imageLines.push_back(imageSingleLine);
             
-            //agrego lineas vacias a los vectores para que tengan el mismo tamaño
-            while (imageLines.size() < data.size()) {
-                imageLines.push_back(string(30, ' '));
-            }
-            while (data.size() < imageLines.size()) {
-                data.push_back(string(1, ' '));
-            }
+            //agrego lineas vacias a los vectores para que tengan el mismo tamaño (evito seg faults)
+            while (imageLines.size() < data.size()) imageLines.push_back(string(1, ' '));
+            while (data.size() < imageLines.size()) data.push_back(string(1, ' '));
 
-            for (size_t i = 0; i < imageLines.size(); i++) {
-                //printeo la imagen y los datos del pokemon
-                cout << imageLines[i] << data[i] << endl;
-            }
+            //printeo la imagen y los datos del pokemon
+            for (size_t i = 0; i < imageLines.size(); i++) cout << imageLines[i] << data[i] << endl;
             return;
         }
     }
@@ -95,6 +88,7 @@ void Pokedex::show(const Pokemon poke) const {
 }
 
 void Pokedex::show() const {
+    //agrego el titulo de la pokedex y un techito para que se vea bien
     string output = string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 - saveName.length() % 2, '=') 
         += " " + saveName + " " 
         += string(MAX_TERM_WIDTH + 2 - (saveName.length()) / 2 , '=') += "\n";
@@ -105,9 +99,8 @@ void Pokedex::show() const {
     }
 
     output += " " + string(MAX_TERM_WIDTH * 2 + 4, '_') + " " + "\n";
-
     
-
+    //voy a guardar los pokemones de a 3 que son los que entran por fila
     vector<Pokemon> threePokemons;
 
     //veo en que pagina me habia quedado
@@ -121,13 +114,15 @@ void Pokedex::show() const {
         //solo entran 3 pokemones por fila (si se amontonan creo que pueden entrar 4 pero al pedo)
         if (threePokemons.size() == 3) {
             printThreePokes(output, threePokemons);
+
+            //reseteo el vector y agrego una linea para dividir las filas
             threePokemons.clear();
             output += "|" + string(MAX_TERM_WIDTH * 2 / 3, '_') + "||" + string(MAX_TERM_WIDTH * 2 / 3, '_') + "||" + string(MAX_TERM_WIDTH * 2 / 3, '_') + "|" + "\n";
         }
         currentPoke++;
     }
 
-    //por si quedan pokemones sin mostrar
+    //por si quedan pokemones sin mostrar (la ultima fila pueden quedar 1 o 2 pokemones colgados)
     if (!threePokemons.empty()) {
         //completo con pokemones vacios
         int numOfEmptys = 0;
@@ -135,6 +130,8 @@ void Pokedex::show() const {
             threePokemons.push_back(Pokemon("Empty"));
             numOfEmptys++;
         }
+
+        //la misma funcion esta preparada para recibir uno o dos pokemones y centrar automaticamente
         printThreePokes(output, threePokemons);
         if (numOfEmptys == 1) output += "|" + string(MAX_TERM_WIDTH + 1, '_') + "||" + string(MAX_TERM_WIDTH + 1, '_') + "|" + "\n";
         if (numOfEmptys == 2) output += "|" + string(MAX_TERM_WIDTH * 2 + 4, '_') + "|" + "\n";
@@ -155,10 +152,8 @@ void Pokedex::saveToFile() {
     size_t count = pokes.size();
     file.write(reinterpret_cast<const char*>(&count), sizeof(count));
 
-    //serializo cada pokemon y su info
-    for (const auto& poke : pokes) {
-        poke.first.serialize(file);
-    }
+    //serializo cada pokemon (no guardo la info ya que esta se genera automaticamente al cargar el pokemon)
+    for (const auto& poke : pokes) poke.first.serialize(file);
 
     file.close();
 }
@@ -189,15 +184,20 @@ void Pokedex::loadFromFile(string filename) {
     if (numThreads == 0) numThreads = 4;
     if (numThreads > count) numThreads = count;
 
+    //calculo cuantos y que tan grandes son los bloques en los cuales voy a dividir los threads
     size_t blockSize = count / numThreads;
-    size_t remainder = count % numThreads;
+
+    //me guardo si hay un resto en la division de arriba para que no se pierdan pokemones
+    size_t pokesLeft = count % numThreads;
 
     vector<thread> threads;
     size_t current = 0;
 
     for (size_t t = 0; t < numThreads; t++) {
+        //defino el inicio y fin del bloque. Arranca por el ultimo que me quede y termina en el tamaño del bloque
+        //aca voy metiendo los que dije antes que iban sobrando repartidos uno para cada thread
         size_t start = current;
-        size_t end = start + blockSize + (t < remainder ? 1 : 0);
+        size_t end = start + blockSize + (t < pokesLeft ? 1 : 0);
 
         threads.emplace_back(blockOfPokesToLoad, this, pokesDeserialized, start, end);
         current = end;
@@ -214,11 +214,11 @@ void blockOfPokesToLoad(Pokedex* pokedex, const vector<Pokemon>& pokesDeserializ
 
 
 //============ METODOS PESADOS PARA IMPRIMIR LA POKEDEX (PRIVADOS) ============//
-string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrints) const {
+string Pokedex::createPokeImages(vector<Pokemon> pokemons, const int widthOfPrints) const {
     string output;
     vector<int> widths, heights, channels;
 
-    //cargo los 3 pokemones de esta fila a la vez
+    //cargo los 3 pokemones de esta fila a la vez con ayuda de la libreria externa stb_image.h
     vector<unsigned char*> images = cargarImagenesPokemones(pokemons, widths, heights, channels);
     if (images.empty()) {
         cout << "Error al cargar una o más imágenes. Abortando..." << endl;
@@ -227,30 +227,28 @@ string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrin
 
     //escalo la imagen para que se ajuste al ancho requerido (15 o 30)
     vector<float> scaleXs, scaleYs;
-    for (size_t i = 0; i < 3; ++i) {
+    for (size_t i = 0; i < 3; i++) {
         scaleXs.push_back(static_cast<float>(widths[i]) / widthOfPrints);
         scaleYs.push_back(static_cast<float>(heights[i]) / widthOfPrints);
     }
 
-    //busco la imagen mas corta en y
+    //las imagenes son cuadradas asi que itero el alto usando el ancho
     for (int y = 0; y < widthOfPrints; y++) {
 
         //para cada linea, se alinean los 3 pokemones con un \n al final (se printean los 3 juntos linea a linea)
         for (int i = 0; i < 3; i++) {
-            //veo cuantos empty hay para ver si tengo que centrar al pokemon
+            //aca veo cuantos emptys pase para centrar la ultima fila de la pagina
             int tabs = 0;
             if (pokemons[i].getName() == "Empty") break;
             if (pokemons[2].getName() == "Empty") tabs = 1;
             if (pokemons[1].getName() == "Empty") tabs = 4;
-            if (widthOfPrints == 30) tabs = 0;
+            if (widthOfPrints == 30) tabs = 0; //por esta linea de aca no uso la funcion emptysAndLeftTabs
 
             output += "|";
             for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
 
-            //centro la imagen en cada bloque de 25 caracteres
-            for (int i = 0; i < (MAX_TERM_WIDTH - 45)/6; i++) {
-                output += "  ";
-            }
+            //centro la imagen en cada bloque
+            for (int i = 0; i < (MAX_TERM_WIDTH - 45)/6; i++) output += "  ";
 
             //printeo una linea del pokemon correspondiente
             for (int x = 0; x < widthOfPrints; x++) {
@@ -266,19 +264,21 @@ string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrin
 
                 bool isTransparent = false;
                 bool isVeryDark = (r + g + b) < 60;
-                if (channel == 4) { // Imagen con canal alpha
+
+                //aca me fijo si el pixel tiene canal alpha para ver si es transparente
+                if (channel == 4) {
                     int a = images[i][idx + 3];
                     isTransparent = (a == 0);
                 }
 
-                //como son todas las fotos PNGs el fondo vacio lo remplazo por dos espacios
+                //si el pixel es transparente lo dejo vacio
                 if (isTransparent) output += "  ";
                 else if (isVeryDark) {
 
-                    //si el pixel sale muy oscuro promedio con los de los costados para suavizar
+                    //si el pixel sale muy oscuro hago un promedio con los de los costados para suavizar (quedaba feo sino)
                     int rSum = 0, gSum = 0, bSum = 0, n = 0;
                 
-                    //pixel izquierdo (me fijo que no me pase del borde)
+                    //pixel izquierdo (me fijo que no me pase del borde y sumo RGB)
                     if (x > 0) {
                         int lidx = (srcY * widths[i] + static_cast<int>((x-1)*scaleXs[i])) * channel;
                         rSum += images[i][lidx];
@@ -287,7 +287,7 @@ string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrin
                         n++;
                     }
 
-                    //pixel derecho (me fijo que no me pase del borde)
+                    //pixel derecho (me fijo que no me pase del borde y sumo RGB)
                     if (x < widthOfPrints-1) {
                         int ridx = (srcY * widths[i] + static_cast<int>((x+1)*scaleXs[i])) * channel;
                         rSum += images[i][ridx];
@@ -296,40 +296,39 @@ string Pokedex::pokemonImagesRow(vector<Pokemon> pokemons, const int widthOfPrin
                         n++;
                     }
 
+                    //saco el promedio, si los dos pixeles vecinos estan vacios va a quedar negro 
+                    //en la cola de charmander pasa esto por ejemplo
                     if (n > 0) {
                         r = rSum / n;
                         g = gSum / n;
                         b = bSum / n;
                     }
                     output += getPixelColor(r, g, b);
-                } 
-                else output += getPixelColor(r, g, b);
+                }
+                else output += getPixelColor(r, g, b); //si no es transparente ni oscuro agrego normalmente
             }
 
             //agrego el segundo margen
-            for (int i = 0; i < (MAX_TERM_WIDTH - 45)/6 ; i++) {
-                output += "  ";
-            }
+            for (int i = 0; i < (MAX_TERM_WIDTH - 45)/6 ; i++) output += "  ";
 
-            //agrego los tabs que se calcularon arriba
-            for (int j = 0; j < tabs; j++) {
-                output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-            }
+            //agrego los tabs que se calcularon arriba pero del lado derecho
+            for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
             output += "|";
         }
+        //bajo de linea
         output += "\n";
     }
 
     //libero la memoria de las imágenes
-    for (auto img : images) {
-        stbi_image_free(img);
-    }
+    for (auto img : images) stbi_image_free(img);
     return output;
 }
 
 void Pokedex::printThreePokes(string& output, vector<Pokemon> threePokemons) const {
-    //printeo las imagenes
-    output += pokemonImagesRow(threePokemons, 15);
+    //agrego las imagenes
+    output += createPokeImages(threePokemons, 15);
+
+    //agrego una separacion entre las imagenes y los datos
     for (int i = 0; i < 3; i++) {
         if (threePokemons[i].getName() == "Empty") break;
         int tabs = emptysAndLeftTabs(output, threePokemons, MAX_TERM_WIDTH);
@@ -337,12 +336,12 @@ void Pokedex::printThreePokes(string& output, vector<Pokemon> threePokemons) con
         output += string(MAX_TERM_WIDTH * 2 / 3, ' ');
 
         //agrego los tabs de la derecha
-        for (int j = 0; j < tabs; j++) {
-            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-        }
+        for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         output += "|";
     }
     output += "\n";
+    
+    //agrego toda la info a output
     printNames(output, threePokemons);
     printXP(output, threePokemons);
     printAttacks(output, threePokemons);
@@ -357,13 +356,11 @@ void Pokedex::printNames(string& output, const vector<Pokemon> threePokemons) co
         int level = getPokemonLevel({threePokemons[i], pokes.at(threePokemons[i])});
         string levelStr = (level >= 0) ? " (Level: " + to_string(level) + ")" : " (Max Level)";
 
-        //multiplico por 2 porque el ancho se mide con un ratio de 2 caracteres por pixel
+        //multiplico por 2 porque el ancho de la terminal se mide con un ratio de 2 caracteres por pixel
         printCentered(output, threePokemons[i].getName() + levelStr, MAX_TERM_WIDTH * 2 / 3);
 
         //agrego los tabs de la derecha
-        for (int j = 0; j < tabs; j++) {
-            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-        }
+        for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         output += "|";
     }
     output += "\n";
@@ -381,9 +378,7 @@ void Pokedex::printXP(string& output, const vector<Pokemon> threePokemons) const
         output += string(MAX_TERM_WIDTH / 3 - 13, ' ') + levelBarStr + string(MAX_TERM_WIDTH / 3 - 13, ' ');
 
         //agrego los tabs de la derecha
-        for (int j = 0; j < tabs; j++) {
-            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-        }
+        for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         output += "|";
     }
     output += "\n";
@@ -399,14 +394,11 @@ void Pokedex::printXP(string& output, const vector<Pokemon> threePokemons) const
             size_t xpCurrent = threePokemons[i].getXP();
             string xpStr = to_string(xpCurrent) + "/" + to_string(xpNeeded);
             printCentered(output, xpStr, MAX_TERM_WIDTH * 2 / 3);
-        } else {
-            printCentered(output, "Max Level", MAX_TERM_WIDTH * 2 / 3);
-        }
+        } 
+        else printCentered(output, "Max Level", MAX_TERM_WIDTH * 2 / 3);
 
         //agrego los tabs de la derecha
-        for (int j = 0; j < tabs; j++) {
-            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-        }
+        for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         output += "|";
     }
     output += "\n";
@@ -422,9 +414,7 @@ void Pokedex::printAttacks(string& output, const vector<Pokemon> threePokemons) 
         else printCentered(output, threePokemons[i].getName() + " has no attacks.", MAX_TERM_WIDTH * 2 / 3);
         
         //agrego los tabs de la derecha
-        for (int j = 0; j < tabs; j++) {
-            output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-        }
+        for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
         output += "|";
     }
     output += "\n";
@@ -443,15 +433,11 @@ void Pokedex::printAttacks(string& output, const vector<Pokemon> threePokemons) 
         
             auto attacks = pokes.at(threePokemons[poke]).getAttacks();
             string attackStr = "";
-            if (attack < attacks.size()) {
-                attackStr = attacks[attack].first + " (Power: " + to_string(attacks[attack].second) + ")";
-            }
+            if (attack < attacks.size()) attackStr = attacks[attack].first + " (Power: " + to_string(attacks[attack].second) + ")";
             printCentered(output, attackStr, MAX_TERM_WIDTH * 2 / 3);
 
             //agrego los tabs de la derecha
-            for (int j = 0; j < tabs; j++) {
-                output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-            }
+            for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
             output += "|";
         }
         output += "\n";
@@ -461,6 +447,9 @@ void Pokedex::printAttacks(string& output, const vector<Pokemon> threePokemons) 
 //============ METODOS PESADOS PARA IMPRIMIR UN POKEMON (PRIVADOS) ============//
 vector<string> Pokedex::getDataToPrint(pair<Pokemon, PokemonInfo> entry) const {
     vector<string> data;
+
+    //le agrego a data de a poco toda la info que me interesa mostrar del pokemon
+    data.push_back("Pokedex ID: " + to_string(entry.first.getPokedexID()));
     data.push_back("Name: " + entry.first.getName());
     data.push_back("Type: " + entry.second.getType());
     data.push_back(" ");
@@ -470,24 +459,24 @@ vector<string> Pokedex::getDataToPrint(pair<Pokemon, PokemonInfo> entry) const {
     if (entry.second.getAttacks().size()) data.push_back("\033[4mAttacks:\033[0m");
     else data.push_back(entry.first.getName() + " has no attacks.");
     
-    for (const auto& attack : entry.second.getAttacks()) {
-        data.push_back(" - " + attack.first + " (Power: " + to_string(attack.second) + ")");
-    }
+    for (const auto& attack : entry.second.getAttacks()) data.push_back(" - " + attack.first + " (Power: " + to_string(attack.second) + ")");
     data.push_back(" ");
 
     data.push_back("\033[4mDescription:\033[0m");
+
+    //a partir de aca agrego la descripcion, como es larga voy a seccionarla para que se printee en renglones
     size_t maxWidth = MAX_TERM_WIDTH - 31;
     stringstream ss(entry.second.getDescription());
     string line;
     getline(ss, line);
 
     bool firstLine = true;
-    //voy a cortar el texto por si tengo que bajar de linea
+    //corto el texto por si tengo que bajar de linea
     while (line.length() > maxWidth) {
         //busco el ultimo espacio antes de maxWidth (para no cortar palabras)
         size_t lastSpace = line.rfind(' ', maxWidth);
 
-        //si no encuentro un espacio vuelvo al limite y por ser una palabra muy larga se corta
+        //si no encuentro un espacio vuelvo al limite y por ser una palabra muy larga se corta (caso muy borde creo que nunca se da)
         if (lastSpace == string::npos || lastSpace == 0) lastSpace = maxWidth;
 
         string toPush;

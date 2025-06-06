@@ -1,12 +1,12 @@
 #include "../include/info.hpp"
 #include "../include/utils.hpp"
 
-PokemonInfo::PokemonInfo(string name):
+PokemonInfo::PokemonInfo(size_t pokedexID):
     type(""), description(""), attacks(), xpRemaining(){
-        type = pokemonDataBase[name].type;
-        description = pokemonDataBase[name].description;
-        attacks = pokemonDataBase[name].attacks;
-        xpRemaining = pokemonDataBase[name].xpRemaining;
+        type = pokemonDataBase[pokedexID].type;
+        description = pokemonDataBase[pokedexID].description;
+        attacks = pokemonDataBase[pokedexID].attacks;
+        xpRemaining = pokemonDataBase[pokedexID].xpRemaining;
     }
 
 void PokemonInfo::setType(const string& newType) {
@@ -39,9 +39,4 @@ vector<pair<string, size_t>> PokemonInfo::getAttacks() const {
 
 vector<size_t> PokemonInfo::getXPRemaining() const {
     return xpRemaining;
-}
-
-void PokemonInfo::addAttack(string attackName, size_t damage, size_t xpNeeded){
-    attacks.push_back(make_pair(attackName, damage));
-    xpRemaining.push_back(xpNeeded);
 }

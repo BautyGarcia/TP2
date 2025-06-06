@@ -3,11 +3,17 @@
 
 Pokemon::Pokemon(string n):
     name(n), xp(0), pokedexID(-1)
-{if (pokemonDataBase.find(n) != pokemonDataBase.end()) pokedexID = pokemonDataBase[n].pokedexID;}
+{if (standardNameToPokedexID.find(n) != standardNameToPokedexID.end()){
+    pokedexID = standardNameToPokedexID[n];
+    name = pokemonDataBase[pokedexID].name;
+}}
 
 Pokemon::Pokemon(string n, size_t x):
     name(n), xp(x), pokedexID(-1)
-{if (pokemonDataBase.find(n) != pokemonDataBase.end()) pokedexID = pokemonDataBase[n].pokedexID;}
+{if (standardNameToPokedexID.find(n) != standardNameToPokedexID.end()){
+    pokedexID = standardNameToPokedexID[n];
+    name = pokemonDataBase[pokedexID].name;
+}}
 
 Pokemon::Pokemon(const Pokemon& other):
     name(other.name), xp(other.xp), pokedexID(other.pokedexID)

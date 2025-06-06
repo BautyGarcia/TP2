@@ -14,20 +14,21 @@ vector<unsigned char*> cargarImagenesPokemones(vector<Pokemon> pokemons, vector<
     vector<unsigned char*> images;
 
     for (size_t i = 0; i < 3 && i < pokemons.size(); i++) {
-        if (pokemons[i].getName() == "Empty") {
-            continue;
-        }
-        //construyo el path de la imagen del pokemon
+        //si paso un empty no cargo la imagen. Las otras funciones estan pensadas para poder recibir menos de 3 imagenes
+        if (pokemons[i].getName() == "Empty") continue;
+
+        //construyo el path de la imagen del pokemon (los nombres son 004.png, 025.png, 347.png, etc)
         ostringstream pokedexIDStream;
         pokedexIDStream << setw(3) << setfill('0') << pokemons[i].getPokedexID();
         string pokePath = "assets/imgs/" + pokedexIDStream.str() + ".png";
         
+        //verifico que exista el archivo pero en este punto ya esta mas que chequeado que llego un ID valido
         if (!filesystem::exists(pokePath)) {
             throw runtime_error("fatal error: " + pokePath + ": No such file or directory");
             return {};
         }
 
-        //cargamos la imagen con una libreria externa
+        //cargamos la imagen con una libreria externa (stbi_load) devuelve un string con los valores RGB de cada pixel
         int width, height, channels;
         unsigned char* img = stbi_load(pokePath.c_str(), &width, &height, &channels, 0);
         if (!img) {
@@ -35,7 +36,14 @@ vector<unsigned char*> cargarImagenesPokemones(vector<Pokemon> pokemons, vector<
             images.push_back(nullptr);
             continue;
         }
+
+        //aca arriba uso dos throws porque:
+        // 1. si no existe el archivo es porque se colo un pokemon sin ID y no deberia pasar
+        // 2. todas las imagenes se pudieron cargar, si alguna falla en algun momento es por algun error de stb_image.h
+        //ambos casos son errores que ameritan cortar el programa para darles toda la atencion.
+        //igual, nuevamente, nunca deberian fallar a no ser que se empiece a tocar el codigo o las imagenes
         
+        //agrego la info
         images.push_back(img);
         widths.push_back(width);
         heights.push_back(height);
@@ -44,6 +52,8 @@ vector<unsigned char*> cargarImagenesPokemones(vector<Pokemon> pokemons, vector<
     return images;
 }
 
+//son calculos aburridos para centrar un texto en un ancho determinado
+//calculo los margenes y agrego al output
 void printCentered(string& output, string text, int width) {
     int len = text.length();
     int leftMargin = (width - len) / 2;
@@ -56,16 +66,15 @@ void printCentered(string& output, string text, int width) {
 string barCreator(float percentage) {
     const int TOTAL = 26;
     const int BLOCK_SIZE = 2;
-    string barColor = getPixelColor(143, 210, 246);
+    //trate de buscar un color que se parezca al azul de los juegos de pokemon pero ni con chatGPT lo consegui, es lo mejor que pude
+    string barColor = getPixelColor(143, 210, 246); 
     string bar;
     
     //solo entran 13 bloques (cada uno ocupa dos caracteres)
     int filled_blocks = round((percentage / 100.0f) * 13);
 
     //meto la cantidad de bloques que corresponda
-    for (int i = 0; i < filled_blocks; ++i) {
-        bar += barColor;
-    }
+    for (int i = 0; i < filled_blocks; ++i) bar += barColor;
 
     //calculo cuantos caracteres sobraron
     int used_chars = filled_blocks * BLOCK_SIZE;
@@ -102,9 +111,7 @@ int emptysAndLeftTabs(string& output, vector<Pokemon> threePokemons, int MAX_TER
     if (threePokemons[1].getName() == "Empty") tabs = 4;
 
     output += "|";
-    for (int j = 0; j < tabs; j++) {
-        output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-    }
+    for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
 
     return tabs;
 }

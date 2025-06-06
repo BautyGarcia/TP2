@@ -9,7 +9,6 @@ class Pokemon {
         size_t xp;
         int pokedexID;
 
-        void readData();
     public:
         Pokemon(string name);
         Pokemon(string name, size_t xp);

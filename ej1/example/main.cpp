@@ -7,6 +7,7 @@
 atomic<bool> isLoading(true);
 
 int main(){
+    srand(static_cast<unsigned int>(time(nullptr)));
     //cargo todos los pokemones a la base de datos
     loadPokemonDataBase();
 
@@ -61,12 +62,13 @@ int main(){
     }
 
     while (true){
-        
+        //limpio la terminal y muestro la pokedex con las acciones
         clearScreen();
         pokedex.show();
         cout << endl << endl;
         int numOptions = showOptions(pokedex.getCurrentPage(), pokedex.getTotalPages());
 
+        //pido que elija la opcion
         string inputLine;
         int option;
         getline(cin, inputLine);
@@ -85,6 +87,7 @@ int main(){
             ss >> option;
         }
 
+        //handeleo casos
         switch (option){
             case 0: pokedex.saveToFile(); return 0;
             case 1: handleAddPokemon(pokedex); break;

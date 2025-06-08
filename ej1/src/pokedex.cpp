@@ -453,8 +453,16 @@ vector<string> Pokedex::getDataToPrint(pair<Pokemon, PokemonInfo> entry) const {
     data.push_back("Name: " + entry.first.getName());
     data.push_back("Type: " + entry.second.getType());
     data.push_back(" ");
-    data.push_back("Level: " + to_string(getPokemonLevel(entry)));
-    data.push_back("XP: " + barCreator(static_cast<float>(entry.first.getXP()) / entry.second.getXPRemaining()[getPokemonLevel(entry)] * 100) + " " + to_string(entry.first.getXP()) + "/" + to_string(entry.second.getXPRemaining()[getPokemonLevel(entry)]));
+
+    //-1 significa que esta a maximo nivel
+    if (getPokemonLevel(entry) == -1){
+        data.push_back("Max Level Reached!");
+        data.push_back("XP: " + barCreator(100.0f));
+    }
+    else{
+        data.push_back("Level: " + to_string(getPokemonLevel(entry)));
+        data.push_back("XP: " + barCreator(static_cast<float>(entry.first.getXP()) / entry.second.getXPRemaining()[getPokemonLevel(entry)] * 100) + " " + to_string(entry.first.getXP()) + "/" + to_string(entry.second.getXPRemaining()[getPokemonLevel(entry)]));
+    }
     data.push_back(" ");
     if (entry.second.getAttacks().size()) data.push_back("\033[4mAttacks:\033[0m");
     else data.push_back(entry.first.getName() + " has no attacks.");

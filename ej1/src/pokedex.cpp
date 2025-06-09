@@ -33,7 +33,7 @@ void Pokedex::addPokemon(const Pokemon& pokemon) {
     //si el pokemon no existe en la base de datos de base tenia -1 como id, por lo que nunca se lo cambiaron
     if (pokemon.getPokedexID() == -1) {
         cout << "Not even the bests pokemon masters of all time know this Pokemon." << endl;
-        this_thread::sleep_for(chrono::seconds(3));
+        this_thread::sleep_for(chrono::seconds(1));
         return;
     }
 
@@ -58,33 +58,6 @@ int Pokedex::getPokemonLevel(const pair<Pokemon, PokemonInfo>& entry) const {
         if (entry.second.getXPRemaining()[i] > entry.first.getXP()) return i;
     }
     return -1; //devuelve -1 si esta a nivel max (para verlo de afuera)
-}
-
-void Pokedex::show(const Pokemon poke) const {
-    //itero por todos los pokemones de la pokedex
-    for (const auto& entry : pokes){
-
-        //si encuentro el pokemon, muestro su info
-        if (entry.first == poke){
-            vector<string> data = getDataToPrint(entry);
-            string image = createPokeImages({entry.first, Pokemon("Empty"), Pokemon("Empty")}, 30);
-
-            //separo la imagen en lineas para printear la info a la derecha
-            vector<string> imageLines;
-            istringstream stream(image);
-            string imageSingleLine;
-            while (getline(stream, imageSingleLine)) imageLines.push_back(imageSingleLine);
-            
-            //agrego lineas vacias a los vectores para que tengan el mismo tamaño (evito seg faults)
-            while (imageLines.size() < data.size()) imageLines.push_back(string(1, ' '));
-            while (data.size() < imageLines.size()) data.push_back(string(1, ' '));
-
-            //printeo la imagen y los datos del pokemon
-            for (size_t i = 0; i < imageLines.size(); i++) cout << imageLines[i] << data[i] << endl;
-            return;
-        }
-    }
-    cout << "Unknown Pokemon!" << endl;
 }
 
 void Pokedex::show() const {
@@ -139,6 +112,39 @@ void Pokedex::show() const {
     cout << output;
 }
 
+void Pokedex::show(const Pokemon poke, bool printData) const {
+    //itero por todos los pokemones de la pokedex
+    for (const auto& entry : pokes){
+
+        //si encuentro el pokemon, muestro su info
+        if (entry.first == poke){
+            vector<string> data = getDataToPrint(entry);
+            string image = createPokeImages({entry.first, Pokemon("Empty"), Pokemon("Empty")}, printData ? 30 : 64);
+
+            //separo la imagen en lineas para printear la info a la derecha
+            vector<string> imageLines;
+            istringstream stream(image);
+            string imageSingleLine;
+            while (getline(stream, imageSingleLine)) imageLines.push_back(imageSingleLine);
+            
+            //agrego lineas vacias a los vectores para que tengan el mismo tamaño (evito seg faults)
+            while (imageLines.size() < data.size()) imageLines.push_back(string(1, ' '));
+            while (data.size() < imageLines.size()) data.push_back(string(1, ' '));
+
+            if (!printData) cout << "Pokemon: " << poke.getName() << endl << endl;
+
+            //printeo la imagen y los datos del pokemon
+            for (size_t i = 0; i < imageLines.size(); i++){
+                cout << imageLines[i];
+                if (printData) cout << data[i];
+                cout << endl;
+            }
+            return;
+        }
+    }
+    cout << "Unknown Pokemon!" << endl;
+}
+
 void Pokedex::saveToFile() {
     //abro el archivo en modo binario
     //se guarda en ej1/build/bin/
@@ -159,6 +165,8 @@ void Pokedex::saveToFile() {
 }
 
 //cargo los pokemones de un archivo binario (como para cargar la pokedex All Unlocked tardaba 20 segundos, use threads)
+//despues vimos que el problema no eran las threads sino que abrir y cerrar los CSV muchas veces, asi que ya que lo
+//hicimos y funciona dejamos el multithreading pero no ahorra tiempo, sin esta optimizacion es instantaneo tambien
 void Pokedex::loadFromFile(string filename) {
     ifstream file("bin/" + filename, ios::binary);
     if (!file.is_open()) {
@@ -242,10 +250,12 @@ string Pokedex::createPokeImages(vector<Pokemon> pokemons, const int widthOfPrin
             if (pokemons[i].getName() == "Empty") break;
             if (pokemons[2].getName() == "Empty") tabs = 1;
             if (pokemons[1].getName() == "Empty") tabs = 4;
-            if (widthOfPrints == 30) tabs = 0; //por esta linea de aca no uso la funcion emptysAndLeftTabs
+            if (widthOfPrints == 30 || widthOfPrints == 64) tabs = 0; //por esta linea de aca no uso la funcion emptysAndLeftTabs
 
-            output += "|";
-            for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
+            if (widthOfPrints != 64){
+                output += "|";
+                for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
+            }
 
             //centro la imagen en cada bloque
             for (int i = 0; i < (MAX_TERM_WIDTH - 45)/6; i++) output += "  ";
@@ -312,8 +322,10 @@ string Pokedex::createPokeImages(vector<Pokemon> pokemons, const int widthOfPrin
             for (int i = 0; i < (MAX_TERM_WIDTH - 45)/6 ; i++) output += "  ";
 
             //agrego los tabs que se calcularon arriba pero del lado derecho
-            for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
-            output += "|";
+            if (widthOfPrints != 64){
+                for (int j = 0; j < tabs; j++) output += string(MAX_TERM_WIDTH / 6 + 1, ' ');
+                output += "|";
+            }
         }
         //bajo de linea
         output += "\n";

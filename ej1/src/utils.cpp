@@ -31,7 +31,7 @@ void handleAddPokemon(Pokedex& pokedex) {
     pokedex.addPokemon(Pokemon(name));
 }
 
-void handleShowPokemon(Pokedex& pokedex) {
+void handleShowPokemon(Pokedex& pokedex, bool printData) {
     string name;
     cout << "Select a Pokemon from your Pokedex: ";
     getline(cin, name);
@@ -55,18 +55,18 @@ void handleShowPokemon(Pokedex& pokedex) {
 
     //para terminar de evitar case sensivility, llamo al constructor con el nombre estandarizado y el mismo constructor
     //se encarga de buscar el ID del pokedex y que el nombre sea correcto
-    pokedex.show(Pokemon(name));
+    pokedex.show(Pokemon(name), printData);
     cout << endl << "Press enter to continue...";
     string _;
     getline(cin, _);
 }
 
 void handlePage(Pokedex& pokedex, int option) {
-    if (option == 3) {
+    if (option == 4) {
         if (pokedex.getCurrentPage() < pokedex.getTotalPages()) pokedex.nextPage();
         else if (pokedex.getCurrentPage() > 1) pokedex.previousPage();
     }
-    else if (option == 4 && pokedex.getCurrentPage() > 1) pokedex.previousPage();
+    else if (option == 5 && pokedex.getCurrentPage() > 1) pokedex.previousPage();
 }
 
 int askForPokedex(vector<string> savedPokedexes) {

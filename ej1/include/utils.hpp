@@ -20,7 +20,7 @@ extern unordered_map<string, size_t> standardNameToPokedexID;
 void handleAddPokemon(Pokedex& pokedex);
 
 //pide al usuario que ingrese un nombre de pokemon y lo muestra en la pokedex
-void handleShowPokemon(Pokedex& pokedex);
+void handleShowPokemon(Pokedex& pokedex, bool printData);
 
 //maneja cuando hay que cambiar de pagina
 void handlePage(Pokedex& pokedex, int option);

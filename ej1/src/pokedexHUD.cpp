@@ -89,8 +89,8 @@ string barCreator(float percentage) {
 int showOptions(size_t currentPage, size_t totalPages) {
     cout << "1. Add Pokemon" << endl;
     cout << "2. Select a Pokemon" << endl;
-
-    int num = 3;
+    cout << "3. Wanna see a good image" << endl;
+    int num = 4;
     if (totalPages > 1 && currentPage < totalPages) {
         cout << num << ". Next Page" << endl;
         num++;

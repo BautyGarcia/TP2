@@ -32,11 +32,10 @@ class Pokedex {
 
         void addPokemon(const Pokemon& pokemon);
         void show() const;
-        void show(const Pokemon poke) const;
+        void show(const Pokemon poke, bool printData) const;
 
         void saveToFile();
         void loadFromFile(string filename);
-
 };
 
 void blockOfPokesToLoad(Pokedex* pokedex, const vector<Pokemon>& pokesDeserialized, size_t startOfBlock, size_t endOfBlock);

@@ -51,14 +51,14 @@ int main(){
     if (selectedPokedex){
         //aviso que esta cargando la pokedex
         isLoading = true;
-
+        
         //mando la thread de la pantalla de carga a laburar
-        thread loading(loadingScreen);
+        //thread loading(loadingScreen);
         pokedex.loadFromFile(pokedexName);
 
         //cuando termina de cargar los pokemones, aviso a la pantalla de carga que se puede volver a dormir
         isLoading = false;
-        loading.join(); //este muñeco parece que no sirve mucho pero por temas de timing es mas seguro tenerlo
+        //loading.join(); //este muñeco parece que no sirve mucho pero por temas de timing es mas seguro tenerlo (una vez me fallo)
     }
 
     while (true){
@@ -91,7 +91,8 @@ int main(){
         switch (option){
             case 0: pokedex.saveToFile(); return 0;
             case 1: handleAddPokemon(pokedex); break;
-            case 2: handleShowPokemon(pokedex); break;
+            case 2: handleShowPokemon(pokedex, true); break;
+            case 3: handleShowPokemon(pokedex, false); break;
             default: handlePage(pokedex, option); break;
         }
     }

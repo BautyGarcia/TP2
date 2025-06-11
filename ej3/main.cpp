@@ -31,9 +31,6 @@ int getRandom(int min, int max) {
 
 void robot() {
     while (true) {
-        // Sleep de consigna
-        this_thread::sleep_for(chrono::milliseconds(250));
-
         unique_lock<mutex> lock(tareasMutex);
 
         // Si no tengo tareas pero todavia los sensores no terminaron, espero (pongo el thread a dormir)
@@ -50,6 +47,9 @@ void robot() {
         
         // Desbloqueo el mutex para que el sensor pueda pushear una nueva tarea y otro robot pueda hacer su task
         lock.unlock();
+
+        // Sleep de consigna (simula lo que tarda el robot en hacer la tarea)
+        this_thread::sleep_for(chrono::milliseconds(250));
     }
 }
 

@@ -6,6 +6,8 @@
 #include <queue>
 #include <mutex>
 #include <condition_variable>
+#define NUM_SENSORS 3
+#define NUM_ROBOTS 3
 
 using namespace std;
 
@@ -36,10 +38,10 @@ void robot() {
 
         // Si no tengo tareas pero todavia los sensores no terminaron, espero (pongo el thread a dormir)
         // Manejo los supious wakeups de esta forma
-        cv.wait(lock, [] { return !tareas.empty() || sensorsFinished == 3; });
+        cv.wait(lock, [] { return !tareas.empty() || sensorsFinished == NUM_SENSORS; });
 
         // Si no hay tareas y los sensores terminaron, salgo del while (caso para que no quede un loop infinito)
-        if (tareas.empty() && sensorsFinished == 3) break;
+        if (tareas.empty() && sensorsFinished == NUM_SENSORS) break;
 
         // Hago la task de este actor
         Tarea current_task = tareas.front();
@@ -80,19 +82,19 @@ int main() {
     vector<thread> sensors;
     vector<thread> robots;
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < NUM_SENSORS; i++) {
         sensors.push_back(thread(&sensor, i));
     }
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < NUM_ROBOTS; i++) {
         robots.push_back(thread(&robot));
     }
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < NUM_SENSORS; i++) {
         sensors[i].join();
     }
 
-    for (int i = 0; i < 3; i++) {
+    for (int i = 0; i < NUM_ROBOTS; i++) {
         robots[i].join();
     }
 

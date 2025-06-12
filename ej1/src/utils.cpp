@@ -120,7 +120,7 @@ void loadPokemonDataBase(){
     string name, type1, type2, movesList, description;
 
     //primero armo un map para guardar el poder de cada movimiento y usarlo mas adelante
-    unordered_map<string, size_t> movePower;
+    unordered_map<string, int> movePower;
     getline(movesDataFile, line);
     while (getline(movesDataFile, line)) {
         stringstream ss(line);
@@ -133,7 +133,7 @@ void loadPokemonDataBase(){
         for (int i = 0; i < 4; i++) getline(ss, powerStr, ',');
 
         //guardo el poder del movimiento
-        movePower[moveName] = static_cast<size_t>(stoi(powerStr));
+        movePower[moveName] = stoi(powerStr);
     }
 
     //extraigo la info de cada pokemon

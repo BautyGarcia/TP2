@@ -7,7 +7,7 @@ struct PokemonInfoMapped{
     string name;
     string type;
     string description;
-    vector<pair<string, size_t>> attacks;
+    vector<pair<string, int>> attacks;
     vector<size_t> xpRemaining;
 };
 

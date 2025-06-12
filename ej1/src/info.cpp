@@ -17,7 +17,7 @@ void PokemonInfo::setDescription(const string& newDescription) {
     description = newDescription;
 }
 
-void PokemonInfo::setAttacks(const vector<pair<string, size_t>>& newAttacks) {
+void PokemonInfo::setAttacks(const vector<pair<string, int>>& newAttacks) {
     attacks = newAttacks;
 }
 
@@ -33,7 +33,7 @@ string PokemonInfo::getDescription() const {
     return description;
 }
 
-vector<pair<string, size_t>> PokemonInfo::getAttacks() const {
+vector<pair<string, int>> PokemonInfo::getAttacks() const {
     return attacks;
 }
 

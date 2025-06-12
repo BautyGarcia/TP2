@@ -207,7 +207,7 @@ void Pokedex::loadFromFile(string filename) {
         size_t start = current;
         size_t end = start + blockSize + (t < pokesLeft ? 1 : 0);
 
-        threads.emplace_back(blockOfPokesToLoad, this, ref(pokesDeserialized), ref(start), ref(end));
+        threads.emplace_back(blockOfPokesToLoad, this, pokesDeserialized, start, end);
         current = end;
     }
 

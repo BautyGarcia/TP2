@@ -10,15 +10,12 @@ void handleAddPokemon(Pokedex& pokedex) {
     string name;
     cout << "Enter the name of the Pokemon to add: ";
     getline(cin, name);
-    while (name.empty()) {
-        cout << "Enter a valid name.";
-        this_thread::sleep_for(chrono::seconds(2));
-
-        //esto borra una linea de la terminal
-        cout << "\033[A\33[2K";
-
-        cin.clear();
-        getline(cin, name);
+    if (!cin.good() || name.empty()) {
+        cout << "Really? You just had one task." << endl;
+        cout << "Press enter to continue...";
+        string _;
+        getline(cin, _);
+        return;
     }
 
     //hago todo el nombre minuscula para que no sea case sensitive
@@ -35,15 +32,12 @@ void handleShowPokemon(Pokedex& pokedex, bool printData) {
     string name;
     cout << "Select a Pokemon from your Pokedex: ";
     getline(cin, name);
-    while (name.empty()) {
-        cout << "Enter a valid name.";
-        this_thread::sleep_for(chrono::seconds(2));
-
-        //esto borra una linea de la terminal
-        cout << "\033[A\33[2K";
-
-        cin.clear();
-        getline(cin, name);
+    if (!cin.good() || name.empty()) {
+        cout << "Really? You just had one task." << endl;
+        cout << "Press enter to continue...";
+        string _;
+        getline(cin, _);
+        return;
     }
     
     //hago todo el nombre minuscula para que no sea case sensitive

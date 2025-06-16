@@ -123,12 +123,15 @@ void loadingScreen() {
     while (isLoading){
         cout << "Uploading Data." << flush;
         this_thread::sleep_for(chrono::milliseconds(500));
+        if (!isLoading) break;
         cout << "." << flush;
         this_thread::sleep_for(chrono::milliseconds(500));
+        if (!isLoading) break;
         cout << "." << flush;
         this_thread::sleep_for(chrono::milliseconds(500));
         clearScreen();
     }
+    clearScreen();
     cout << "Data uploaded successfully!" << endl;
     this_thread::sleep_for(chrono::seconds(1));
 }

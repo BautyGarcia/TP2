@@ -53,12 +53,12 @@ int main(){
         isLoading = true;
         
         //mando la thread de la pantalla de carga a laburar
-        //thread loading(loadingScreen);
+        thread loading(loadingScreen);
         pokedex.loadFromFile(pokedexName);
 
         //cuando termina de cargar los pokemones, aviso a la pantalla de carga que se puede volver a dormir
         isLoading = false;
-        //loading.join(); //este muñeco parece que no sirve mucho pero por temas de timing es mas seguro tenerlo (una vez me fallo)
+        loading.join();
     }
 
     while (true){
@@ -76,7 +76,10 @@ int main(){
         ss >> option;
         while (ss.fail() || option < 0 || option > numOptions - 1) {
             cout << "Invalid input. Select a valid option." << endl;
-            this_thread::sleep_for(chrono::seconds(1));
+            cout << "Press enter to continue...";
+            string _;
+            getline(cin, _);
+
             clearScreen();
             pokedex.show();
             cout << endl << endl;

@@ -33,7 +33,9 @@ void Pokedex::addPokemon(const Pokemon& pokemon) {
     //si el pokemon no existe en la base de datos de base tenia -1 como id, por lo que nunca se lo cambiaron
     if (pokemon.getPokedexID() == -1) {
         cout << "Not even the bests pokemon masters of all time know this Pokemon." << endl;
-        this_thread::sleep_for(chrono::seconds(1));
+        cout << "Press enter to continue...";
+        string _;
+        getline(cin, _);
         return;
     }
 
@@ -49,7 +51,9 @@ void Pokedex::addPokemon(const Pokemon& pokemon) {
         }
     }
     cout << "Pokemon already exists in the Pokedex!" << endl;
-    this_thread::sleep_for(chrono::seconds(3));   
+    cout << "Press enter to continue...";
+    string _;
+    getline(cin, _);
 }
 
 int Pokedex::getPokemonLevel(const pair<Pokemon, PokemonInfo>& entry) const {
@@ -142,7 +146,7 @@ void Pokedex::show(const Pokemon poke, bool printData) const {
             return;
         }
     }
-    cout << "Unknown Pokemon!" << endl;
+    cout << "Unknown Pokemon!";
 }
 
 void Pokedex::saveToFile() {
@@ -228,10 +232,7 @@ string Pokedex::createPokeImages(vector<Pokemon> pokemons, const int widthOfPrin
 
     //cargo los 3 pokemones de esta fila a la vez con ayuda de la libreria externa stb_image.h
     vector<unsigned char*> images = cargarImagenesPokemones(pokemons, widths, heights, channels);
-    if (images.empty()) {
-        cout << "Error al cargar una o más imágenes. Abortando..." << endl;
-        return "";
-    }
+    if (images.empty()) throw runtime_error("Image loading failed. Aborting...");
 
     //escalo la imagen para que se ajuste al ancho requerido (15 o 30)
     vector<float> scaleXs, scaleYs;
@@ -504,7 +505,7 @@ vector<string> Pokedex::getDataToPrint(pair<Pokemon, PokemonInfo> entry) const {
         toPush += toPush + line.substr(0, lastSpace);
         
         //como las descripciones tenian comas y se me rompia todo, las cambie por * asi que las vuelvo a cambiar a comas
-        replace(toPush.begin(), toPush.end(), '*', ',');
+        replace(toPush.begin(), toPush.end(), '#', ',');
         data.push_back(toPush);
 
         //skipeo el espacio y descarto lo que ya guarde
@@ -515,7 +516,7 @@ vector<string> Pokedex::getDataToPrint(pair<Pokemon, PokemonInfo> entry) const {
     //la ultima linea queda afuera del while asi que hago todo una vez mas
     if (!line.empty()) {
         string toPush = line;
-        replace(toPush.begin(), toPush.end(), '*', ',');
+        replace(toPush.begin(), toPush.end(), '#', ',');
         data.push_back(toPush);
     }
 
